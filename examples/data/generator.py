@@ -52,6 +52,7 @@ class DataGenerator:
                 random.randint(1, 5, m_e),
                 random.randint(10, 15, m_e) * 100,
             ),
+            aggregated_plan_costs=random.randint(1, 5, (m_e, n_e)),
             delta=.5,
             schedules=random.permutation(n_k),
             interest=random.random((m_e, n_k)),

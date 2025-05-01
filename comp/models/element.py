@@ -22,6 +22,7 @@ class ElementData:
     config: ElementConfig
     coeffs_functional: ndarray  # c_e
     resource_constraints: Tuple[ndarray, ndarray, ndarray]  # b_e, b_e_1, b_e_2
+    aggregated_plan_costs: ndarray  # A_e
 
     delta: Optional[float]  # delta_e
 
