@@ -72,6 +72,6 @@ class DataGenerator:
 
 
 if __name__ == "__main__":
-    generator = DataGenerator()
-    center_data = generator.generate_center_data()
-    print(center_data)
+    """Test the DataGenerator class."""
+
+    print(DataGenerator().generate_center_data())

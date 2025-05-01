@@ -33,6 +33,8 @@ def assert_bounds(value: T, bounds: tuple[T, T], name: str = "") -> None:
 
 
 if __name__ == "__main__":
+    """ Test the assertions module. """
+
     assert_positive(5, "test_value")
     assert_non_negative(0, "test_value")
     assert_valid_dimensions([array([1, 2]), array([3])], [(2,), (1,)], ["array1", "array2"])

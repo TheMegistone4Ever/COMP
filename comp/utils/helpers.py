@@ -92,6 +92,8 @@ def copy_element_coeffs(element: ElementData, coeffs_functional: Optional[ndarra
 
 
 class SupportsAdd(Protocol):
+    """Protocol for objects that support the addition operator."""
+
     def __add__(self, other: "SupportsAdd") -> "SupportsAdd": ...
 
 
@@ -124,6 +126,8 @@ def lp_sum(variables: Iterable[T]) -> T | Any:
 
 
 if __name__ == "__main__":
+    """ Test the stringify function with various inputs. """
+
     num_0d = 42
     list_1d = [1, 2, 3]
     list_2d = [[1, 2], [3, 4]]
