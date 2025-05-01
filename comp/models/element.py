@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Optional
 
 from numpy import ndarray
 
@@ -11,6 +11,7 @@ class ElementConfig:
     id: int
     num_decision_variables: int  # n_e
     num_constraints: int  # m_e
+
     num_schedules: int  # n_k
 
 
@@ -21,7 +22,9 @@ class ElementData:
     config: ElementConfig
     coeffs_functional: ndarray  # c_e
     resource_constraints: Tuple[ndarray, ndarray, ndarray]  # b_e, b_e_1, b_e_2
-    schedules: ndarray  # sigma_e
-    interest: ndarray  # alpha_e
-    weight_coefficients: ndarray  # w_e
-    delta: float  # delta_e
+
+    delta: Optional[float]  # delta_e
+
+    schedules: Optional[ndarray]  # sigma_e
+    interest: Optional[ndarray]  # alpha_e
+    weight_coefficients: Optional[ndarray]  # w_e

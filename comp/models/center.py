@@ -3,7 +3,7 @@ from typing import List
 
 from numpy import ndarray
 
-from element import ElementData
+from .element import ElementData
 
 
 @dataclass(frozen=True)
