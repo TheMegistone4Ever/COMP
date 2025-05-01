@@ -60,8 +60,7 @@ class BaseSolver(ABC):
 
         if not self.solved:
             self.solved = True
-            status = self.solver.Solve()
-            if status == pywraplp.Solver.OPTIMAL:
+            if self.solver.Solve() == pywraplp.Solver.OPTIMAL:
                 self.objective_value = self.solver.Objective().Value()
                 self.solution = self.get_solution()
             else:
