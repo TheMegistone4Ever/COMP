@@ -41,7 +41,7 @@ def stringify(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: i
     """
 
     def convert_ndarrays(obj):
-        """Helper function to convert numpy arrays to lists recursively"""
+        """Helper function to convert numpy arrays to list recursively"""
 
         if isinstance(obj, ndarray):
             return obj.tolist()

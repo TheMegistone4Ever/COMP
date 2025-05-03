@@ -1,4 +1,4 @@
-from comp.solvers.element.linear.second import ElementLinearSecond
+from comp.solvers.element import ElementLinearSecond
 from examples.data import DataGenerator
 
 if __name__ == "__main__":
