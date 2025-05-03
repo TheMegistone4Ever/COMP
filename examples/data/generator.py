@@ -49,8 +49,8 @@ class DataGenerator:
             coeffs_functional=random.randint(1, 10, n_e),
             resource_constraints=(
                 random.randint(5, 10, m_e) * 100,
-                random.randint(1, 5, m_e),
-                random.randint(10, 15, m_e) * 100,
+                random.randint(1, 5, n_e),
+                random.randint(10, 15, n_e) * 100,
             ),
             aggregated_plan_costs=random.randint(1, 5, (m_e, n_e)),
             delta=.5,

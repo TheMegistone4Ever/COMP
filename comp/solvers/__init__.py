@@ -1,4 +1,4 @@
-from base import BaseSolver
+from .base import BaseSolver
 
 __all__ = [
     "BaseSolver",

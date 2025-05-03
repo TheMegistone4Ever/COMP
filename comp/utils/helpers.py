@@ -40,9 +40,16 @@ def stringify(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: i
         ]
     """
 
-    # Convert numpy arrays to lists for consistent handling
-    if isinstance(tensor, ndarray):
-        tensor = tensor.tolist()
+    def convert_ndarrays(obj):
+        """Helper function to convert numpy arrays to lists recursively"""
+
+        if isinstance(obj, ndarray):
+            return obj.tolist()
+        elif isinstance(obj, (list, tuple)):
+            return type(obj)(convert_ndarrays(item) for item in obj)
+        return obj
+
+    tensor = convert_ndarrays(tensor)
 
     def format_number(x: Number) -> str:
         """Helper function to format numbers with consistent precision"""
@@ -77,9 +84,8 @@ def stringify(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: i
             spacer = " " * (level * indent)
             next_spacer = " " * ((level + 1) * indent)
             elements = [format_recursive(item, level + 1) for item in x]
-            return f"[\n{next_spacer}" + f",\n{next_spacer}".join(elements) + f"\n{spacer}]"
-
-        # Fall back to string representation for other types
+            open_bracket, close_bracket = ("[", "]") if isinstance(x, list) else ("(", ")")
+            return f"{open_bracket}\n{next_spacer}" + f",\n{next_spacer}".join(elements) + f"\n{spacer}{close_bracket}"
         return str(x)
 
     return format_recursive(tensor)
