@@ -42,7 +42,7 @@ class DataGenerator:
 
         return ElementData(
             config=ElementConfig(
-                type=random.choice([ElementType.DECENTRALIZED, ElementType.NEGOTIATED]),
+                type=random.choice(list(ElementType)),
                 id=element_idx,
                 num_decision_variables=(n_e := self.num_decision_variables[element_idx]),
                 num_constraints=(m_e := self.num_constraints[element_idx]),
