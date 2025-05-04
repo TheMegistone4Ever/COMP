@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import IntEnum, auto
 from typing import Tuple, Optional
 
 from numpy import ndarray
 
 
-class ElementType(Enum):
+class ElementType(IntEnum):
     """
     Enumeration for different types of elements in the system.
 

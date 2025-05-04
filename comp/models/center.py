@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import IntEnum, auto
 from typing import List
 
 from numpy import ndarray
@@ -7,7 +7,7 @@ from numpy import ndarray
 from .element import ElementData
 
 
-class CenterType(Enum):
+class CenterType(IntEnum):
     """
     Enumeration for different types of center coordination strategies.
 
