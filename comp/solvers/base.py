@@ -53,6 +53,9 @@ class BaseSolver(ABC):
     def setup(self):
         """Set up the optimization problem."""
 
+        if self.setup_done:
+            return
+
         self.setup_variables()
         self.setup_constraints()
         self.setup_objective()
