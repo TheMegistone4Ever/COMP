@@ -1,6 +1,7 @@
 from numpy import random
 
 from comp.models import ElementData, ElementConfig, CenterData, CenterConfig
+from comp.models.element import ElementType
 from comp.utils import assert_positive
 
 
@@ -41,6 +42,7 @@ class DataGenerator:
 
         return ElementData(
             config=ElementConfig(
+                type=random.choice([ElementType.DECENTRALIZED, ElementType.NEGOTIATED]),
                 id=element_idx,
                 num_decision_variables=(n_e := self.num_decision_variables[element_idx]),
                 num_constraints=(m_e := self.num_constraints[element_idx]),

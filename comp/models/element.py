@@ -8,8 +8,8 @@ from numpy import ndarray
 class ElementType(Enum):
     """Enumeration for different types of elements in the system."""
 
-    COMBINATORIAL = auto()
-    LINEAR = auto()
+    DECENTRALIZED = auto()
+    NEGOTIATED = auto()
 
 
 @dataclass(frozen=True)
