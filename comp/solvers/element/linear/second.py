@@ -10,57 +10,12 @@ class ElementLinearSecond(BaseSolver):
 
     def __init__(self, data: ElementData):
         super().__init__()
-        # Validate input dimensions
-        assert_valid_dimensions(
-            [data.coeffs_functional,
-             data.resource_constraints[0],
-             data.resource_constraints[1],
-             data.resource_constraints[2],
-             data.aggregated_plan_costs,
-             data.schedules,
-             data.interest,
-             data.weight_coefficients, ],
-            [(data.config.num_decision_variables,),
-             (data.config.num_constraints,),
-             (data.config.num_decision_variables,),
-             (data.config.num_decision_variables,),
-             (data.config.num_constraints, data.config.num_decision_variables),
-             (data.config.num_schedules,),
-             (data.config.num_constraints, data.config.num_schedules),
-             (data.config.num_constraints, data.config.num_schedules), ],
-            ["coeffs_functional",
-             "resource_constraints[0]",
-             "resource_constraints[1]",
-             "resource_constraints[2]",
-             "aggregated_plan_costs",
-             "schedules",
-             "interest",
-             "weight_coefficients", ]
-        )
-        assert_non_negative(
-            data.delta,
-            "data.delta"
-        )
-        assert_non_negative(
-            data.config.id,
-            "data.config.id"
-        )
-        assert_positive(
-            data.config.num_decision_variables,
-            "data.config.num_decision_variables"
-        )
-        assert_positive(
-            data.config.num_constraints,
-            "data.config.num_constraints"
-        )
-        assert_positive(
-            data.config.num_schedules,
-            "data.config.num_schedules"
-        )
 
         self.data = data
         self.y_e: List[Any] = list()
         self.y_star_e: List[Any] = list()
+
+        self.validate_input()
 
     def setup_variables(self) -> None:
         """Set up optimization variables for the element problem."""
@@ -153,3 +108,53 @@ class ElementLinearSecond(BaseSolver):
         ))
 
         print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(element_objective)}")
+
+    def validate_input(self) -> None:
+        """Validate the input data of the optimization for the element problem."""
+
+        assert_valid_dimensions(
+            [self.data.coeffs_functional,
+             self.data.resource_constraints[0],
+             self.data.resource_constraints[1],
+             self.data.resource_constraints[2],
+             self.data.aggregated_plan_costs,
+             self.data.schedules,
+             self.data.interest,
+             self.data.weight_coefficients, ],
+            [(self.data.config.num_decision_variables,),
+             (self.data.config.num_constraints,),
+             (self.data.config.num_decision_variables,),
+             (self.data.config.num_decision_variables,),
+             (self.data.config.num_constraints, self.data.config.num_decision_variables),
+             (self.data.config.num_schedules,),
+             (self.data.config.num_constraints, self.data.config.num_schedules),
+             (self.data.config.num_constraints, self.data.config.num_schedules), ],
+            ["coeffs_functional",
+             "resource_constraints[0]",
+             "resource_constraints[1]",
+             "resource_constraints[2]",
+             "aggregated_plan_costs",
+             "schedules",
+             "interest",
+             "weight_coefficients", ]
+        )
+        assert_non_negative(
+            self.data.delta,
+            "data.delta"
+        )
+        assert_non_negative(
+            self.data.config.id,
+            "data.config.id"
+        )
+        assert_positive(
+            self.data.config.num_decision_variables,
+            "data.config.num_decision_variables"
+        )
+        assert_positive(
+            self.data.config.num_constraints,
+            "data.config.num_constraints"
+        )
+        assert_positive(
+            self.data.config.num_schedules,
+            "data.config.num_schedules"
+        )

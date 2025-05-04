@@ -44,6 +44,12 @@ class BaseSolver(ABC):
 
         pass
 
+    @abstractmethod
+    def validate_input(self) -> None:
+        """Validate the input data for the optimization problem."""
+
+        pass
+
     def setup(self):
         """Set up the optimization problem."""
 
