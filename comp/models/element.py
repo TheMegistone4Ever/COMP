@@ -1,12 +1,22 @@
 from dataclasses import dataclass
+from enum import Enum, auto
 from typing import Tuple, Optional
 
 from numpy import ndarray
 
 
+class ElementType(Enum):
+    """Enumeration for different types of elements in the system."""
+
+    COMBINATORIAL = auto()
+    LINEAR = auto()
+
+
 @dataclass(frozen=True)
 class ElementConfig:
     """Configuration data for an element in the system."""
+
+    type: ElementType
 
     id: int
     num_decision_variables: int  # n_e
