@@ -6,7 +6,17 @@ from numpy import ndarray
 
 
 class ElementType(Enum):
-    """Enumeration for different types of elements in the system."""
+    """
+    Enumeration for different types of elements in the system.
+
+    DECENTRALIZED:
+        Element independently forms its own local plan based on its own goals and constraints.
+        It interacts with the center primarily through negotiation or coordination protocols.
+
+    NEGOTIATED:
+        Element forms its plan in coordination with the center,
+        taking into account both its own interests and the planning instructions received from the center.
+    """
 
     DECENTRALIZED = auto()
     NEGOTIATED = auto()
