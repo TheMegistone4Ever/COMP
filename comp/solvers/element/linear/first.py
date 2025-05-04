@@ -123,6 +123,7 @@ class ElementLinearFirst(BaseSolver):
             return
 
         tab_out(f"\nInput data for element {stringify(self.data.config.id)}", (
+            ("Element Type", stringify(self.data.config.type)),
             ("Element ID", stringify(self.data.config.id)),
             ("Element Number of Decision Variables", stringify(self.data.config.num_decision_variables)),
             ("Element Number of Constraints", stringify(self.data.config.num_constraints)),

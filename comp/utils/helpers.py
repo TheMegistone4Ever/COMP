@@ -1,7 +1,7 @@
 from dataclasses import replace
 from enum import ReprEnum
 from numbers import Number
-from typing import Union, List, Any, Sequence, Optional, TypeVar, Protocol, Iterable
+from typing import List, Any, Sequence, Optional, TypeVar, Protocol, Iterable
 
 from numpy import ndarray, array
 from tabulate import tabulate
@@ -16,7 +16,7 @@ def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str]
     print(tabulate(data, headers, "grid"))
 
 
-def stringify(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: int = 4, precision: int = 2) -> str:
+def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
     """
     Formats n-dimensional tensors (nested lists/arrays) for better readability.
 
