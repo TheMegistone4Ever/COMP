@@ -6,7 +6,7 @@ from typing import List, Any, Sequence, Optional, TypeVar, Protocol, Iterable
 from numpy import ndarray, array
 from tabulate import tabulate
 
-from ..models.element import ElementData
+from comp.models import ElementData
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
@@ -61,7 +61,7 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
     def is_nested(x: Any) -> bool:
         """Helper function to check if an object is a nested structure"""
 
-        return isinstance(x, list) and any(isinstance(item, (list, ndarray)) for item in x)
+        return isinstance(x, (list, tuple)) and any(isinstance(item, (list, tuple, ndarray)) for item in x)
 
     def format_recursive(x: Any, level: int = 0) -> str:
         """Recursively format nested structures"""
@@ -79,13 +79,19 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
             elements = [format_number(item) if isinstance(item, Number) else str(item) for item in x]
             return f"[{", ".join(elements)}]"
 
-        # Handle nested structures
-        if isinstance(x, list):
+        # Handle non-nested tuples
+        if isinstance(x, tuple) and not is_nested(x):
+            elements = [format_number(item) if isinstance(item, Number) else str(item) for item in x]
+            return f"({", ".join(elements)})"
+
+        # Handle nested structures (lists or tuples)
+        if isinstance(x, (list, tuple)):
             spacer = " " * (level * indent)
             next_spacer = " " * ((level + 1) * indent)
             elements = [format_recursive(item, level + 1) for item in x]
             open_bracket, close_bracket = ("[", "]") if isinstance(x, list) else ("(", ")")
             return f"{open_bracket}\n{next_spacer}" + f",\n{next_spacer}".join(elements) + f"\n{spacer}{close_bracket}"
+
         return str(x)
 
     return format_recursive(tensor)
@@ -141,6 +147,9 @@ if __name__ == "__main__":
     array_2d = array([[1, 2], [3, 4]])
     tensor_3d_int = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
     tensor_3d_float = array(tensor_3d_int, dtype=float) + .123456789
+    tuple_1d = (1, 2, 3)
+    tuple_2d = ((1, 2), [3, 4, tuple_1d], (1, 2, 3, 4))
+    tuple_combined = (tuple_1d, [1, 2, 3, 4], tuple_2d, [1, 2, 3])
 
     print(f"Number:\n{stringify(num_0d)}", end="\n\n")
     print(f"1D List:\n{stringify(list_1d)}", end="\n\n")
@@ -149,3 +158,6 @@ if __name__ == "__main__":
     print(f"2D Array:\n{stringify(array_2d)}", end="\n\n")
     print(f"3D Tensor (int):\n{stringify(tensor_3d_int)}", end="\n\n")
     print(f"3D Tensor (float, 6 d.p.):\n{stringify(tensor_3d_float, precision=6)}", end="\n\n")
+    print(f"1D Tuple:\n{stringify(tuple_1d)}", end="\n\n")
+    print(f"2D Tuple:\n{stringify(tuple_2d)}", end="\n\n")
+    print(f"Combined Tuple:\n{stringify(tuple_combined)}", end="\n\n")

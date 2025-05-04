@@ -1,6 +1,6 @@
 from typing import Any, List, TypeVar
 
-from numpy import ndarray, array
+from numpy import array
 
 T = TypeVar("T")
 
@@ -23,7 +23,8 @@ def assert_valid_dimensions(arrays: List[Any],
     """Assert that arrays have valid dimensions."""
 
     for arr, dim, name in zip(arrays, expected_dims, names):
-        assert array(arr).shape == dim, f"Array {name} has invalid dimensions. Expected {dim}, got {arr.shape}"
+        assert array(arr, dtype="object").shape == dim, (f"Array {name} has invalid dimensions."
+                                                         f" Expected {dim}, got {arr.shape}")
 
 
 def assert_bounds(value: T, bounds: tuple[T, T], name: str = "") -> None:

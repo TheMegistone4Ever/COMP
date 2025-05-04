@@ -152,4 +152,4 @@ class ElementLinearSecond(BaseSolver):
             ("Private Decision Variables", stringify(dict_solved["y_star_e"])),
         ))
 
-        print(f"\nElement {stringify(self.data.config.id)} quality functionality: {stringify(element_objective)}")
+        print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(element_objective)}")

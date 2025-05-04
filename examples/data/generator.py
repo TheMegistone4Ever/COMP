@@ -1,7 +1,6 @@
 from numpy import random
 
-from comp.models import ElementData, ElementConfig, CenterData, CenterConfig
-from comp.models.element import ElementType
+from comp.models import CenterType, ElementType, ElementData, ElementConfig, CenterData, CenterConfig
 from comp.utils import assert_positive
 
 
@@ -65,7 +64,11 @@ class DataGenerator:
         """Generate complete center data."""
 
         return CenterData(
-            config=CenterConfig(id=0, num_elements=self.num_elements),
+            config=CenterConfig(
+                type=random.choice(list(CenterType)),
+                id=0,
+                num_elements=self.num_elements
+            ),
             coeffs_functional=[
                 random.randint(1, 5, self.num_decision_variables[e])
                 for e in range(self.num_elements)

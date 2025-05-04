@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import IntEnum, auto
+from enum import Enum, auto
 from typing import List
 
 from numpy import ndarray
@@ -7,7 +7,7 @@ from numpy import ndarray
 from .element import ElementData
 
 
-class CenterType(IntEnum):
+class CenterType(Enum):
     """
     Enumeration for different types of center coordination strategies.
 
@@ -35,6 +35,8 @@ class CenterType(IntEnum):
 @dataclass(frozen=True)
 class CenterConfig:
     """Configuration data for the system center."""
+
+    type: CenterType
 
     id: int
     num_elements: int  # m
