@@ -1,9 +1,10 @@
 from abc import abstractmethod
-from typing import Any, Tuple, Dict, Optional
+from typing import Any, Dict, Optional, Tuple, List
 
 from ortools.linear_solver import pywraplp
 
 from comp.models import ElementData
+from comp.utils import tab_out, stringify, assert_valid_dimensions, assert_non_negative, assert_positive
 from .base import BaseSolver
 
 
@@ -18,11 +19,15 @@ class ElementSolver(BaseSolver[ElementData]):
         self.objective_value: Optional[float] = None
         self.solution: Optional[Dict[str, Any]] = None
 
-    @abstractmethod
+        self.y_e: List[Any] = list()
+
     def setup_variables(self) -> None:
         """Set up optimization variables."""
 
-        pass
+        self.y_e = [
+            self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
+            for i in range(self.data.config.num_decision_variables)
+        ]
 
     @abstractmethod
     def setup_constraints(self) -> None:
@@ -43,7 +48,7 @@ class ElementSolver(BaseSolver[ElementData]):
         pass
 
     @abstractmethod
-    def get_plan(self, pos: int) -> Any:
+    def get_plan_component(self, pos: int) -> Any:
         """Get the plan's vector component for a specific position."""
 
         pass
@@ -83,3 +88,63 @@ class ElementSolver(BaseSolver[ElementData]):
         """Get the objective value of the optimization."""
 
         return self.objective_value
+
+    def print_results(self) -> None:
+        """Print the results of the optimization for the element problem."""
+
+        element_objective, dict_solved = self.solve()
+
+        if element_objective == float("inf"):
+            print("\nNo optimal solution found.")
+            return
+
+        tab_out(f"\nInput data for element {stringify(self.data.config.id)}", (
+            ("Element Type", stringify(self.data.config.type)),
+            ("Element ID", stringify(self.data.config.id)),
+            ("Element Number of Decision Variables", stringify(self.data.config.num_decision_variables)),
+            ("Element Number of Constraints", stringify(self.data.config.num_constraints)),
+            ("Element Functional Coefficients", stringify(self.data.coeffs_functional)),
+            ("Element Resource Constraints", stringify(self.data.resource_constraints)),
+            ("Element Aggregated Plan Costs", stringify(self.data.aggregated_plan_costs)),
+            ("Element Delta", stringify(self.data.delta)),
+            ("Element W", stringify(self.data.w)),
+        ))
+
+        print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(element_objective)}")
+
+    def validate_input(self) -> None:
+        """Validate the input data of the optimization for the element problem."""
+
+        assert_valid_dimensions(
+            [self.data.coeffs_functional,
+             self.data.resource_constraints[0],
+             self.data.resource_constraints[1],
+             self.data.resource_constraints[2],
+             self.data.aggregated_plan_costs, ],
+            [(self.data.config.num_decision_variables,),
+             (self.data.config.num_constraints,),
+             (self.data.config.num_decision_variables,),
+             (self.data.config.num_decision_variables,),
+             (self.data.config.num_constraints, self.data.config.num_decision_variables), ],
+            ["coeffs_functional",
+             "resource_constraints[0]",
+             "resource_constraints[1]",
+             "resource_constraints[2]",
+             "aggregated_plan_costs", ]
+        )
+        assert_non_negative(
+            self.data.delta,
+            "data.delta"
+        )
+        assert_non_negative(
+            self.data.config.id,
+            "data.config.id"
+        )
+        assert_positive(
+            self.data.config.num_decision_variables,
+            "data.config.num_decision_variables"
+        )
+        assert_positive(
+            self.data.config.num_constraints,
+            "data.config.num_constraints"
+        )
