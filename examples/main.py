@@ -5,6 +5,6 @@ if __name__ == "__main__":
     """Test the solver."""
 
     center_data = DataGenerator().generate_center_data()
-    element_linear_first = CenterLinearThird(center_data)
-    element_linear_first.setup()
-    element_linear_first.print_results()
+    center_linear_first = CenterLinearThird(center_data)
+    center_linear_first.setup()
+    center_linear_first.print_results()
