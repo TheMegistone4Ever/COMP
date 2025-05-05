@@ -4,7 +4,7 @@ from comp.models import CenterData
 from .base import BaseSolver
 
 
-class CenterSolver(BaseSolver):
+class CenterSolver(BaseSolver[CenterData]):
     """Base class for all center's solvers."""
 
     def __init__(self, data: CenterData):

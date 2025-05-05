@@ -1,8 +1,9 @@
 from comp.models import CenterType, CenterData, ElementData, ElementType
-from comp.solvers.core.base import BaseSolver
+from comp.solvers.core.center import CenterSolver
+from comp.solvers.core.element import ElementSolver
 
 
-def element_solver_fabric(data: ElementData) -> BaseSolver:
+def element_solver_fabric(data: ElementData) -> ElementSolver:
     """
     Factory function to create an element solver based on the specified type.
 
@@ -23,7 +24,7 @@ def element_solver_fabric(data: ElementData) -> BaseSolver:
         raise ValueError(f"Unknown element type for factory: {data.config.type}")
 
 
-def center_solver_fabric(data: CenterData) -> BaseSolver:
+def center_solver_fabric(data: CenterData) -> CenterSolver:
     """
     Factory function to create a center solver based on the specified type.
 

@@ -7,7 +7,7 @@ from comp.models import ElementData
 from .base import BaseSolver
 
 
-class ElementSolver(BaseSolver):
+class ElementSolver(BaseSolver[ElementData]):
     """Base class for all element's solvers."""
 
     def __init__(self, data: ElementData):

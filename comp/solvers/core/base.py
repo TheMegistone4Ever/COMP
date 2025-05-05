@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
+from typing import TypeVar, Generic
 
 from comp.models import BaseData
 
+T = TypeVar("T", bound=BaseData)
 
-class BaseSolver(ABC):
+
+class BaseSolver(ABC, Generic[T]):
     """Base class for all optimization solvers."""
 
-    def __init__(self, data: BaseData):
-        self.data = data
-        self.setup_done = False
+    def __init__(self, data: T):
+        self.data: T = data
+        self.setup_done: bool = False
 
         self.validate_input()
 
