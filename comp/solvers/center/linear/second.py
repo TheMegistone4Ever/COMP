@@ -1,34 +1,23 @@
-from typing import Any, Dict
-
 from comp.models import CenterData
-from comp.solvers.base import BaseSolver
+from comp.solvers.core import CenterSolver
 from comp.solvers.factories import element_solver_fabric
 from comp.utils import (assert_valid_dimensions, assert_non_negative, assert_positive, tab_out, stringify,
                         copy_element_coeffs, lp_sum)
 
 
-class CenterLinearSecond(BaseSolver):
+class CenterLinearSecond(CenterSolver):
     """Solver for center-level optimization problems. 1'st linear model."""
 
     def __init__(self, data: CenterData):
-        super().__init__()
+        super().__init__(data)
 
-        self.data = data
         self.element_solvers = [element_solver_fabric(copy_element_coeffs(element, data.coeffs_functional[e]))
                                 for e, element in enumerate(data.elements)]
         self.optimal_element_solvers = [element_solver_fabric(element) for element in data.elements]
         self.optimal_element_results = list()
-        self.element_results = list()
 
-        self.validate_input()
-
-    def setup_variables(self) -> None:
-        """Set up optimization variables for the center problem."""
-
-        self.optimal_element_results = [solver.setup() or solver.solve() for solver in self.optimal_element_solvers]
-
-    def setup_constraints(self) -> None:
-        """Set up constraints for the center problem."""
+    def add_constraints(self) -> None:
+        """Add constraints to the element's solvers."""
 
         for e, (element_solver) in enumerate(self.element_solvers):
             element_solver.setup()
@@ -40,25 +29,10 @@ class CenterLinearSecond(BaseSolver):
                 >= self.optimal_element_results[e][0] * (1 - element_solver.data.delta)
             )
 
-    def setup_objective(self) -> None:
-        """
-        Set up the objective function for the center problem.
+    def get_optimal_solutions(self) -> None:
+        """Get optimal solutions for the element's solvers."""
 
-        max sum_e(c_e^T * y_e)
-        """
-
-        objective = self.solver.Objective()
-
-        objective.SetMaximization()
-
-    def get_solution(self) -> Dict[str, Any]:
-        """Extract solution values with formatting for the center problem."""
-
-        return dict()
-
-    def get_plan(self, pos: int) -> Any:
-
-        return None
+        self.optimal_element_results = [solver.setup() or solver.solve() for solver in self.optimal_element_solvers]
 
     def print_results(self) -> None:
         """Print the results of the optimization for the center problem."""

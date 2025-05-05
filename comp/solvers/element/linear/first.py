@@ -1,20 +1,17 @@
 from typing import List, Any, Dict
 
 from comp.models import ElementData
-from comp.solvers import BaseSolver
-from comp.utils import assert_valid_dimensions, assert_non_negative, assert_positive, tab_out, stringify, lp_sum
+from comp.solvers import ElementSolver
+from comp.utils import assert_valid_dimensions, assert_non_negative, assert_positive, tab_out, stringify
 
 
-class ElementLinearFirst(BaseSolver):
+class ElementLinearFirst(ElementSolver):
     """Solver for element-level optimization problems. 1'st linear model."""
 
     def __init__(self, data: ElementData):
-        super().__init__()
+        super().__init__(data)
 
-        self.data = data
         self.y_e: List[Any] = list()
-
-        self.validate_input()
 
     def setup_variables(self) -> None:
         """Set up optimization variables for the element problem."""

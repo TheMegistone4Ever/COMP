@@ -1,5 +1,5 @@
 from comp.models import CenterType, CenterData, ElementData, ElementType
-from comp.solvers import BaseSolver
+from comp.solvers.core.base import BaseSolver
 
 
 def element_solver_fabric(data: ElementData) -> BaseSolver:

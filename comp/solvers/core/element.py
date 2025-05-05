@@ -1,16 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Tuple, Dict, Optional
 
 from ortools.linear_solver import pywraplp
 
+from comp.models import ElementData
+from .base import BaseSolver
 
-class BaseSolver(ABC):
-    """Base class for all optimization solvers."""
 
-    def __init__(self):
+class ElementSolver(BaseSolver):
+    """Base class for all element's solvers."""
+
+    def __init__(self, data: ElementData):
+        super().__init__(data)
+
         self.solver = pywraplp.Solver.CreateSolver("GLOP")
         self.solved = False
-        self.setup_done = False
         self.objective_value: Optional[float] = None
         self.solution: Optional[Dict[str, Any]] = None
 
@@ -35,18 +39,6 @@ class BaseSolver(ABC):
     @abstractmethod
     def get_solution(self) -> Dict[str, Any]:
         """Extract the solution from the solver."""
-
-        pass
-
-    @abstractmethod
-    def print_results(self) -> None:
-        """Print the results of the optimization."""
-
-        pass
-
-    @abstractmethod
-    def validate_input(self) -> None:
-        """Validate the input data for the optimization problem."""
 
         pass
 
