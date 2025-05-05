@@ -1,9 +1,9 @@
 from dataclasses import replace
 from enum import ReprEnum
 from numbers import Number
-from typing import List, Any, Sequence, Optional, TypeVar, Protocol, Iterable
+from typing import Any, Iterable, List, Optional, Protocol, Sequence, TypeVar
 
-from numpy import ndarray, array
+from numpy import array, ndarray
 from tabulate import tabulate
 
 from comp.models import ElementData
@@ -12,8 +12,7 @@ from comp.models import ElementData
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
     """Pretty-prints a table with the given data and headers."""
 
-    print(f"\n{subscription}:")
-    print(tabulate(data, headers, "grid"))
+    print(f"\n{subscription}:\n{tabulate(data, headers, "grid")}")
 
 
 def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
@@ -160,4 +159,4 @@ if __name__ == "__main__":
     print(f"3D Tensor (float, 6 d.p.):\n{stringify(tensor_3d_float, precision=6)}", end="\n\n")
     print(f"1D Tuple:\n{stringify(tuple_1d)}", end="\n\n")
     print(f"2D Tuple:\n{stringify(tuple_2d)}", end="\n\n")
-    print(f"Combined Tuple:\n{stringify(tuple_combined)}", end="\n\n")
+    print(f"Combined Tuple:\n{stringify(tuple_combined)}")

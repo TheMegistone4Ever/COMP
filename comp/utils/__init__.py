@@ -1,5 +1,5 @@
-from .assertions import assert_positive, assert_non_negative, assert_valid_dimensions, assert_bounds
-from .helpers import tab_out, stringify, copy_element_coeffs, lp_sum
+from .assertions import assert_bounds, assert_non_negative, assert_positive, assert_valid_dimensions
+from .helpers import copy_element_coeffs, lp_sum, stringify, tab_out
 
 __all__ = [
     "assert_positive",
