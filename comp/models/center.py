@@ -4,6 +4,7 @@ from typing import List
 
 from numpy import ndarray
 
+from .base import BaseConfig, BaseData
 from .element import ElementData
 
 
@@ -33,17 +34,16 @@ class CenterType(Enum):
 
 
 @dataclass(frozen=True)
-class CenterConfig:
+class CenterConfig(BaseConfig):
     """Configuration data for the system center."""
 
     type: CenterType
 
-    id: int
     num_elements: int  # m
 
 
 @dataclass(frozen=True)
-class CenterData:
+class CenterData(BaseData):
     """Data container for center-specific optimization parameters."""
 
     config: CenterConfig

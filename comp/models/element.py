@@ -4,6 +4,8 @@ from typing import Tuple, Optional
 
 from numpy import ndarray
 
+from comp.models import BaseConfig, BaseData
+
 
 class ElementType(Enum):
     """
@@ -23,12 +25,11 @@ class ElementType(Enum):
 
 
 @dataclass(frozen=True)
-class ElementConfig:
+class ElementConfig(BaseConfig):
     """Configuration data for an element in the system."""
 
     type: ElementType
 
-    id: int
     num_decision_variables: int  # n_e
     num_constraints: int  # m_e
 
@@ -36,7 +37,7 @@ class ElementConfig:
 
 
 @dataclass(frozen=True)
-class ElementData:
+class ElementData(BaseData):
     """Data container for element-specific optimization parameters."""
 
     config: ElementConfig
