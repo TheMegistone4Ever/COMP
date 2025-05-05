@@ -45,6 +45,7 @@ class ElementData:
     aggregated_plan_costs: ndarray  # A_e
 
     delta: Optional[float]  # delta_e
+    w: Optional[float]  # w_e
 
     schedules: Optional[ndarray]  # sigma_e
     interest: Optional[ndarray]  # alpha_e
