@@ -2,7 +2,7 @@ from typing import List, Any, Dict
 
 from comp.models import ElementData
 from comp.solvers import BaseSolver
-from comp.utils import assert_valid_dimensions, assert_non_negative, assert_positive, tab_out, stringify
+from comp.utils import assert_valid_dimensions, assert_non_negative, assert_positive, tab_out, stringify, lp_sum
 
 
 class ElementLinearSecond(BaseSolver):
@@ -78,6 +78,11 @@ class ElementLinearSecond(BaseSolver):
             "y_star_e": [v.solution_value() for v in self.y_star_e],
         }
 
+    def get_plan(self, pos: int) -> Any:
+        """Get the partial functional value for the element problem: c_e[pos]^T * y_star_e[pos]."""
+
+        return self.y_star_e[pos]
+
     def print_results(self) -> None:
         """Print the results of the optimization for the element problem."""
 
@@ -97,6 +102,7 @@ class ElementLinearSecond(BaseSolver):
             ("Element Resource Constraints", stringify(self.data.resource_constraints)),
             ("Element Aggregated Plan Costs", stringify(self.data.aggregated_plan_costs)),
             ("Element Delta", stringify(self.data.delta)),
+            ("Element W", stringify(self.data.w)),
             ("Element Schedules", stringify(self.data.schedules)),
             ("Element Interest", stringify(self.data.interest)),
             ("Element Weight Coefficients", stringify(self.data.weight_coefficients)),

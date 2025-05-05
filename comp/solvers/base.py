@@ -50,15 +50,25 @@ class BaseSolver(ABC):
 
         pass
 
-    def setup(self):
+    @abstractmethod
+    def get_plan(self, pos: int) -> Any:
+        """Get the plan's vector component for a specific position."""
+
+        pass
+
+    def setup(self, set_variables=True, set_constraints=True, set_objective=True) -> None:
         """Set up the optimization problem."""
 
         if self.setup_done:
             return
 
-        self.setup_variables()
-        self.setup_constraints()
-        self.setup_objective()
+        if set_variables:
+            self.setup_variables()
+        if set_constraints:
+            self.setup_constraints()
+        if set_objective:
+            self.setup_objective()
+
         self.setup_done = True
 
     def solve(self) -> Tuple[float, Any]:
