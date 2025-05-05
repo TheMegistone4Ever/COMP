@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from numpy import ndarray
 
-from comp.models import BaseConfig, BaseData
+from .base import BaseConfig, BaseData
 
 
 class ElementType(Enum):
@@ -33,8 +33,6 @@ class ElementConfig(BaseConfig):
     num_decision_variables: int  # n_e
     num_constraints: int  # m_e
 
-    num_schedules: int  # n_k
-
 
 @dataclass(frozen=True)
 class ElementData(BaseData):
@@ -47,7 +45,3 @@ class ElementData(BaseData):
 
     delta: Optional[float]  # delta_e
     w: Optional[float]  # w_e
-
-    schedules: Optional[ndarray]  # sigma_e
-    interest: Optional[ndarray]  # alpha_e
-    weight_coefficients: Optional[ndarray]  # w_e
