@@ -26,7 +26,7 @@ class CenterLinearThird(CenterSolver):
 
             element_objective = element_solver.solver.Objective()
 
-            # max - ((d_l^T * y_e - f_c_opt_l) + w_e * (c_e^T * y_e - f_el_opt_e))
+            # Objective: max - ((d_l^T * y_e - f_c_opt_l) + w_e * (c_e^T * y_e - f_el_opt_e))
             # - (d_l^T * y_e)
             for i, (coeff_func) in enumerate(self.data.coeffs_functional[e]):
                 element_objective.SetCoefficient(
