@@ -1,6 +1,7 @@
-from .linear import CenterLinearFirst, CenterLinearSecond
+from .linear import CenterLinearFirst, CenterLinearSecond, CenterLinearThird
 
 __all__ = [
     "CenterLinearFirst",
     "CenterLinearSecond",
+    "CenterLinearThird",
 ]
