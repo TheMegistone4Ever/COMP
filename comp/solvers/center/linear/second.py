@@ -35,7 +35,7 @@ class CenterLinearSecond(BaseSolver):
 
             # Optimality Inequality Constraint: c_e^T * y_e >= f_el_opt_e * (1 - delta_e)
             element_solver.solver.Add(
-                lp_sum(self.data.elements[e].coeffs_functional[i] * element_solver.y_e[i]
+                lp_sum(self.data.elements[e].coeffs_functional[i] * element_solver.get_plan(i)
                        for i in range(element_solver.data.config.num_decision_variables))
                 >= self.optimal_element_results[e][0] * (1 - element_solver.data.delta)
             )
@@ -55,6 +55,10 @@ class CenterLinearSecond(BaseSolver):
         """Extract solution values with formatting for the center problem."""
 
         return dict()
+
+    def get_plan(self, pos: int) -> Any:
+
+        return None
 
     def print_results(self) -> None:
         """Print the results of the optimization for the center problem."""
