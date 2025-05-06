@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Union
 
 from comp.models import BaseData
 
@@ -24,5 +24,11 @@ class BaseSolver(ABC, Generic[T]):
     @abstractmethod
     def validate_input(self) -> None:
         """Validate the input data for the optimization problem."""
+
+        pass
+
+    @abstractmethod
+    def quality_functional(self) -> Union[str, float]:
+        """Calculate the quality functional."""
 
         pass

@@ -85,3 +85,8 @@ class ElementLinearSecond(ElementSolver):
             ("Decision Variables", stringify((dict_solved := self.solve()[1])["y_e"])),
             ("Private Decision Variables", stringify(dict_solved["y_star_e"])),
         ))
+
+    def quality_functional(self) -> float:
+        """Calculate the element's quality functional: c_e^T * y_star_e."""
+
+        return sum(c_e * y_star_e for c_e, y_star_e in zip(self.data.coeffs_functional, self.solve()[1]["y_star_e"]))

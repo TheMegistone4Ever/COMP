@@ -68,3 +68,8 @@ class ElementLinearFirst(ElementSolver):
         tab_out(f"Optimization results for element {stringify(self.data.config.id)}", (
             ("Decision Variables", stringify(self.solve()[1]["y_e"])),
         ))
+
+    def quality_functional(self) -> float:
+        """Calculate the element's quality functional: c_e^T * y_e."""
+
+        return sum(c_e * y_e for c_e, y_e in zip(self.data.coeffs_functional, self.solve()[1]["y_e"]))

@@ -23,30 +23,30 @@ class ElementSolver(BaseSolver[ElementData]):
 
     @abstractmethod
     def setup_constraints(self) -> None:
-        """Set up optimization constraints."""
+        """Set up optimization constraints for the element."""
 
         pass
 
     @abstractmethod
     def setup_objective(self) -> None:
-        """Set up the objective function."""
+        """Set up the objective function for the element."""
 
         pass
 
     @abstractmethod
     def get_solution(self) -> Dict[str, Any]:
-        """Extract the solution from the solver."""
+        """Extract the solution from the element's solver."""
 
         pass
 
     @abstractmethod
     def get_plan_component(self, pos: int) -> Any:
-        """Get the plan's vector component for a specific position."""
+        """Get the vector component of the element's plan at a specific position."""
 
         pass
 
     def setup_variables(self) -> None:
-        """Set up optimization variables."""
+        """Set up optimization variables for the element."""
 
         self.y_e = [
             self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
@@ -54,7 +54,7 @@ class ElementSolver(BaseSolver[ElementData]):
         ]
 
     def setup(self, set_variables=True, set_constraints=True, set_objective=True) -> None:
-        """Set up the optimization problem."""
+        """Set up the optimization problem for the element."""
 
         if self.setup_done:
             return
@@ -69,7 +69,7 @@ class ElementSolver(BaseSolver[ElementData]):
         self.setup_done = True
 
     def solve(self) -> Tuple[float, Any]:
-        """Solve the optimization problem."""
+        """Solve the optimization problem for the element."""
 
         if not self.setup_done:
             raise RuntimeError("Solver setup is not done. Call setup() before solve().")
@@ -85,7 +85,7 @@ class ElementSolver(BaseSolver[ElementData]):
         return self.objective_value, self.solution
 
     def get_objective_value(self) -> float:
-        """Get the objective value of the optimization."""
+        """Get the objective value of the optimization for the element problem."""
 
         return self.objective_value
 
@@ -95,7 +95,7 @@ class ElementSolver(BaseSolver[ElementData]):
         element_objective, dict_solved = self.solve()
 
         if element_objective == float("inf"):
-            print("\nNo optimal solution found.")
+            print(f"\nNo optimal solution found for element: {self.data.config.id}.")
             return
 
         tab_out(f"\nInput data for element {stringify(self.data.config.id)}", (
@@ -110,7 +110,7 @@ class ElementSolver(BaseSolver[ElementData]):
             ("Element W", stringify(self.data.w)),
         ))
 
-        print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(element_objective)}")
+        print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
     def validate_input(self) -> None:
         """Validate the input data of the optimization for the element problem."""

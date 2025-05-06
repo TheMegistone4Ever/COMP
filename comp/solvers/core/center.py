@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Tuple
 
 from comp.models import CenterData
 from comp.utils import tab_out, stringify, assert_valid_dimensions, assert_positive, assert_non_negative
@@ -19,6 +20,14 @@ class CenterSolver(BaseSolver[CenterData]):
 
         pass
 
+    def quality_functional(self) -> Tuple[str, float]:
+        """Calculate the center's quality functional: sum_e (d_e^T * y_e)."""
+
+        sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], y))
+                for e, y in enumerate(element_solver.solve()[1]["y_e"] for element_solver in self.element_solvers)]
+
+        return stringify(sums), sum(sums)
+
     def setup(self, add_constraints=True) -> None:
         """Set up the optimization problem."""
 
@@ -33,8 +42,6 @@ class CenterSolver(BaseSolver[CenterData]):
     def print_results(self) -> None:
         """Print the results of the optimization for the center problem."""
 
-        center_functional = 0
-
         tab_out(f"\nInput data for center {stringify(self.data.config.id)}", (
             ("Center Type", stringify(self.data.config.type)),
             ("Center ID", stringify(self.data.config.id)),
@@ -42,19 +49,10 @@ class CenterSolver(BaseSolver[CenterData]):
             ("Center Functional Coefficients", stringify(self.data.coeffs_functional)),
         ))
 
-        for e, (element_solver) in enumerate(self.element_solvers):
-            element_objective, dict_solved = element_solver.solve()
-
-            if element_objective == float("inf"):
-                print(f"\nNo optimal solution found for element {self.data.config.id}, "
-                      f"thus no solution found for center.")
-                return
-
+        for element_solver in self.element_solvers:
             element_solver.print_results()
 
-            center_functional += element_objective
-
-        print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(center_functional)}")
+        print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
     def validate_input(self) -> None:
         """Validate the input data of the optimization for the center problem."""
