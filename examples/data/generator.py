@@ -45,10 +45,10 @@ class DataGenerator:
             coeffs_functional=random.randint(1, 10, n_e),
             resource_constraints=(
                 random.randint(5, 10, m_e) * 100,
-                random.randint(1, 5, n_e),
+                random.randint(0, 3, n_e),
                 random.randint(10, 15, n_e) * 100,
             ),
-            aggregated_plan_costs=random.randint(1, 5, (m_e, n_e)),
+            aggregated_plan_costs=random.randint(1, 3, (m_e, n_e)),
             delta=.5,
             w=1.,
         )
@@ -63,7 +63,7 @@ class DataGenerator:
                 num_elements=self.num_elements
             ),
             coeffs_functional=[
-                random.randint(1, 5, self.num_decision_variables[e])
+                random.randint(1, 10, self.num_decision_variables[e])
                 for e in range(self.num_elements)
             ],
             elements=[self._generate_element_data(e) for e in range(self.num_elements)],
