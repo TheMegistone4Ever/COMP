@@ -25,31 +25,19 @@ class CenterLinearThird(CenterSolver):
 
             element_objective = element_solver.solver.Objective()
 
-            # Objective: max - ((d_l^T * y_e - f_c_opt_l) + w_e * (c_e^T * y_e - f_el_opt_e))
-            # - (d_l^T * y_e)
+            # Objective: max (d_e^T * y_e + w_e * c_e^T * y_e)
+            # d_e^T * y_e
             for i, (coeff_func) in enumerate(self.data.coeffs_functional[e]):
                 element_objective.SetCoefficient(
                     element_solver.y_e[i],
-                    - float(coeff_func)
+                    float(coeff_func)
                 )
 
-            # - (- f_c_opt_l)
-            element_objective.SetOffset(
-                element_objective.offset()
-                + float(self.f_c_opt[e])
-            )
-
-            # - (w_e * c_e^T * y_e)
+            # w_e * c_e^T * y_e
             for i, (coeff_func) in enumerate(element_solver.data.coeffs_functional):
                 element_objective.SetCoefficient(
                     element_solver.get_plan_component(i),
-                    - float(coeff_func * element_solver.data.w)
+                    float(coeff_func * element_solver.data.w)
                 )
-
-            # - (w_e * (- f_el_opt_e))
-            element_objective.SetOffset(
-                element_objective.offset()
-                + float(self.f_el_opt[e] * element_solver.data.w)
-            )
 
             element_objective.SetMaximization()
