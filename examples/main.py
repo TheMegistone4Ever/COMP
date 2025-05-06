@@ -1,4 +1,7 @@
-from comp.solvers import CenterLinearThird
+from dataclasses import replace
+
+from comp.models import CenterType
+from comp.solvers import new_center_solver
 from examples.data import DataGenerator
 
 
@@ -6,7 +9,8 @@ def main() -> None:
     """Main function to run the solver."""
 
     center_data = DataGenerator().generate_center_data()
-    center_linear_first = CenterLinearThird(center_data)
+    center_linear_first = new_center_solver(replace(center_data, config=replace(
+        center_data.config, type=CenterType.WEIGHTED_BALANCE)))
     center_linear_first.setup()
     center_linear_first.print_results()
 
