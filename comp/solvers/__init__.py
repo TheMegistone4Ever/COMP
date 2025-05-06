@@ -1,10 +1,10 @@
 from comp.models import CenterData, CenterType
 from .center import CenterLinearFirst, CenterLinearSecond, CenterLinearThird
 from .core import BaseSolver, CenterSolver, ElementSolver
-from .factories import element_solver_fabric
+from .factories import new_element_solver
 
 
-def center_solver_fabric(data: CenterData) -> CenterSolver:
+def new_center_solver(data: CenterData) -> CenterSolver:
     """
     Factory function to create a center solver based on the specified type.
 
@@ -32,6 +32,6 @@ __all__ = [
     "CenterLinearFirst",
     "CenterLinearSecond",
     "CenterLinearThird",
-    "element_solver_fabric",
-    "center_solver_fabric",
+    "new_element_solver",
+    "new_center_solver",
 ]

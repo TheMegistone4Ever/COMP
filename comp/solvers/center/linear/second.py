@@ -1,7 +1,7 @@
 from comp.models import CenterData
 from comp.solvers.core import CenterSolver
-from comp.solvers.factories import element_solver_fabric
-from comp.utils import copy_element_coeffs, lp_sum
+from comp.solvers.factories import new_element_solver
+from comp.utils import copy_coeffs, lp_sum
 
 
 class CenterLinearSecond(CenterSolver):
@@ -10,10 +10,10 @@ class CenterLinearSecond(CenterSolver):
     def __init__(self, data: CenterData):
         super().__init__(data)
 
-        self.element_solvers = [element_solver_fabric(copy_element_coeffs(element, data.coeffs_functional[e]))
+        self.element_solvers = [new_element_solver(copy_coeffs(element, data.coeffs_functional[e]))
                                 for e, element in enumerate(data.elements)]
-        self.optimal_element_solvers = [element_solver_fabric(element) for element in data.elements]
-        self.f_el_opt = list()
+        self.optimal_element_solvers = [new_element_solver(element) for element in data.elements]
+        self.f_el_opt = [solver.setup() or solver.solve()[0] for solver in self.optimal_element_solvers]
 
     def add_constraints(self) -> None:
         """Add constraints to the element's solvers."""
@@ -23,12 +23,7 @@ class CenterLinearSecond(CenterSolver):
 
             # Optimality Inequality Constraint: c_e^T * y_e >= f_el_opt_e * (1 - delta_e)
             element_solver.solver.Add(
-                lp_sum(self.data.elements[e].coeffs_functional[i] * element_solver.get_plan_component(i)
+                lp_sum(element_solver.data.coeffs_functional[i] * element_solver.get_plan_component(i)
                        for i in range(element_solver.data.config.num_decision_variables))
                 >= self.f_el_opt[e] * (1 - element_solver.data.delta)
             )
-
-    def get_optimal_solutions(self) -> None:
-        """Get optimal solutions for the element's solvers."""
-
-        self.f_el_opt = [solver.setup() or solver.solve()[0] for solver in self.optimal_element_solvers]

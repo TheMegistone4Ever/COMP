@@ -96,7 +96,7 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
     return format_recursive(tensor)
 
 
-def copy_element_coeffs(element: ElementData, coeffs_functional: Optional[ndarray] = None) -> ElementData:
+def copy_coeffs(element: ElementData, coeffs_functional: Optional[ndarray] = None) -> ElementData:
     """Creates a copy of an ElementData instance with optionally modified coeffs_functional."""
 
     return element if coeffs_functional is None else replace(element, coeffs_functional=coeffs_functional)

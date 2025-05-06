@@ -21,14 +21,6 @@ class ElementSolver(BaseSolver[ElementData]):
 
         self.y_e: List[Any] = list()
 
-    def setup_variables(self) -> None:
-        """Set up optimization variables."""
-
-        self.y_e = [
-            self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
-            for i in range(self.data.config.num_decision_variables)
-        ]
-
     @abstractmethod
     def setup_constraints(self) -> None:
         """Set up optimization constraints."""
@@ -52,6 +44,14 @@ class ElementSolver(BaseSolver[ElementData]):
         """Get the plan's vector component for a specific position."""
 
         pass
+
+    def setup_variables(self) -> None:
+        """Set up optimization variables."""
+
+        self.y_e = [
+            self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
+            for i in range(self.data.config.num_decision_variables)
+        ]
 
     def setup(self, set_variables=True, set_constraints=True, set_objective=True) -> None:
         """Set up the optimization problem."""

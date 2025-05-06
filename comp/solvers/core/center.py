@@ -19,20 +19,12 @@ class CenterSolver(BaseSolver[CenterData]):
 
         pass
 
-    @abstractmethod
-    def get_optimal_solutions(self) -> None:
-        """Get optimal solutions for the element's solvers."""
-
-        pass
-
-    def setup(self, get_optimal_solutions=True, add_constraints=True) -> None:
+    def setup(self, add_constraints=True) -> None:
         """Set up the optimization problem."""
 
         if self.setup_done:
             return
 
-        if get_optimal_solutions:
-            self.get_optimal_solutions()
         if add_constraints:
             self.add_constraints()
 

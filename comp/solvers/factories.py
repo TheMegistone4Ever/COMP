@@ -3,7 +3,7 @@ from comp.solvers.core import ElementSolver
 from comp.solvers.element import ElementLinearFirst, ElementLinearSecond
 
 
-def element_solver_fabric(data: ElementData) -> ElementSolver:
+def new_element_solver(data: ElementData) -> ElementSolver:
     """
     Factory function to create an element solver based on the specified type.
 
