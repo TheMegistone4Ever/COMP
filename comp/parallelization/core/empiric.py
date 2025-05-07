@@ -2,7 +2,7 @@ from math import log
 from typing import Tuple
 
 
-def empiric(size: Tuple[int, int]) -> int:
+def empiric(size: Tuple[int, int]) -> float:
     """
     Empiric function to calculate a score based on the size of a tuple.
 
