@@ -1,5 +1,5 @@
 from comp.models import ElementData, ElementType
-from comp.solvers.core import ElementSolver
+from comp.solvers.core.element import ElementSolver
 from comp.solvers.element import ElementLinearFirst, ElementLinearSecond
 
 
@@ -20,3 +20,11 @@ def new_element_solver(data: ElementData) -> ElementSolver:
         return ElementLinearSecond(data)
     else:
         raise ValueError(f"Unknown element type for factory: {data.config.type}")
+
+
+def execute_solver_from_data(element_data: ElementData) -> float:
+    """Create solver from data, solve, and return the objective value."""
+
+    solver = new_element_solver(element_data)
+    solver.setup()
+    return solver.solve()[0]

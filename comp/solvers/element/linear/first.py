@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 from comp.models import ElementData
-from comp.solvers.core import ElementSolver
+from comp.solvers.core.element import ElementSolver
 from comp.utils import stringify, tab_out
 
 

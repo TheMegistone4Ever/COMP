@@ -143,7 +143,7 @@ def get_lp_problem_sizes(data: List[ElementData]) -> List[Tuple[int, int]]:
 
 
 if __name__ == "__main__":
-    """ Test the stringify function with various inputs. """
+    """Test the stringify function with various inputs."""
 
     num_0d = 42
     list_1d = [1, 2, 3]
