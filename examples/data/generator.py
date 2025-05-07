@@ -1,3 +1,5 @@
+from multiprocessing import cpu_count
+
 from numpy import random
 
 from comp.models import CenterConfig, CenterData, CenterType, ElementConfig, ElementData, ElementType
@@ -50,7 +52,7 @@ class DataGenerator:
             ),
             aggregated_plan_costs=random.randint(1, 3, (m_e, n_e)),
             delta=.5,
-            w=1.,
+            w=10.,
         )
 
     def generate_center_data(self) -> CenterData:
@@ -58,8 +60,10 @@ class DataGenerator:
 
         return CenterData(
             config=CenterConfig(
-                type=random.choice(list(CenterType)),
                 id=0,
+                min_parallelisation_threshold=cpu_count() or None,
+                num_threads=cpu_count() or 1,
+                type=random.choice(list(CenterType)),
                 num_elements=self.num_elements
             ),
             coeffs_functional=[

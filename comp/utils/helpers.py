@@ -1,7 +1,7 @@
 from dataclasses import replace
 from enum import ReprEnum
 from numbers import Number
-from typing import Any, Iterable, List, Optional, Protocol, Sequence, TypeVar
+from typing import Any, Iterable, List, Optional, Protocol, Sequence, TypeVar, Tuple
 
 from numpy import array, ndarray
 from tabulate import tabulate
@@ -134,6 +134,12 @@ def lp_sum(variables: Iterable[T]) -> T | Any:
         result += value
 
     return result
+
+
+def get_lp_problem_sizes(data: List[ElementData]) -> List[Tuple[int, int]]:
+    """Get the sizes of the linear programming problem for each element."""
+
+    return [(d.config.num_constraints, d.config.num_decision_variables) for d in data]
 
 
 if __name__ == "__main__":

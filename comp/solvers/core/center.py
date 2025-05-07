@@ -2,7 +2,9 @@ from abc import abstractmethod
 from typing import Tuple
 
 from comp.models import CenterData
-from comp.utils import tab_out, stringify, assert_valid_dimensions, assert_positive, assert_non_negative
+from comp.parallelization import ParallelExecutor, get_order
+from comp.utils import (tab_out, stringify, assert_valid_dimensions, assert_positive, assert_non_negative,
+                        get_lp_problem_sizes)
 from .base import BaseSolver
 
 
@@ -13,6 +15,12 @@ class CenterSolver(BaseSolver[CenterData]):
         super().__init__(data)
 
         self.element_solvers = list()
+        self.order = get_order(get_lp_problem_sizes(data.elements), data.config.num_threads)
+        self.parallel_executor = ParallelExecutor(
+            min_threshold=data.config.min_parallelisation_threshold,
+            num_threads=data.config.num_threads,
+            order=self.order,
+        )
 
     @abstractmethod
     def add_constraints(self) -> None:
@@ -23,8 +31,11 @@ class CenterSolver(BaseSolver[CenterData]):
     def quality_functional(self) -> Tuple[str, float]:
         """Calculate the center's quality functional: sum_e (d_e^T * y_e)."""
 
+        y_e_list = self.parallel_executor.execute([lambda solver=solver_e: solver.solve()[1]["y_e"]
+                                                   for solver_e in self.element_solvers])
+
         sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], y))
-                for e, y in enumerate(element_solver.solve()[1]["y_e"] for element_solver in self.element_solvers)]
+                for e, y in enumerate(y_e_list) if y is not None]
 
         return stringify(sums), sum(sums)
 
@@ -47,10 +58,13 @@ class CenterSolver(BaseSolver[CenterData]):
             ("Center ID", stringify(self.data.config.id)),
             ("Center Number of Elements", stringify(self.data.config.num_elements)),
             ("Center Functional Coefficients", stringify(self.data.coeffs_functional)),
+            ("Center Min Parallelization Threshold", stringify(self.data.config.min_parallelisation_threshold)),
+            ("Center Number of Threads", stringify(self.data.config.num_threads)),
+            ("Center Parallelization Order", stringify(self.order)),
         ))
 
-        for element_solver in self.element_solvers:
-            element_solver.print_results()
+        self.parallel_executor.execute([lambda solver=solver_e: solver.print_results()
+                                        for solver_e in self.element_solvers])
 
         print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 

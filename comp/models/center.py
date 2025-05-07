@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List
+from typing import List, Optional
 
 from numpy import ndarray
 
@@ -36,6 +36,9 @@ class CenterType(Enum):
 @dataclass(frozen=True)
 class CenterConfig(BaseConfig):
     """Configuration data for the system center."""
+
+    min_parallelisation_threshold: Optional[int]
+    num_threads: int
 
     type: CenterType
 
