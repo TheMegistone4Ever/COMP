@@ -79,7 +79,6 @@ class CenterSolver(BaseSolver[CenterData]):
             ["coeffs_functional",
              "elements", ]
         )
-
         assert_positive(
             self.data.config.num_elements,
             "data.config.num_elements"
