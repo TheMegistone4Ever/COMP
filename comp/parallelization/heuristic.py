@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from .core import Device, Operation, empiric
+from comp.parallelization.core import Device, Operation, empiric
 
 
 # --- Scheduling algorithm components (from your multi_device.py example) ---
