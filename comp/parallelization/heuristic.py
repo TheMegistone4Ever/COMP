@@ -1,70 +1,37 @@
-from dataclasses import dataclass, field
-from math import log
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
-
-@dataclass
-class Operation:
-    duration: float
-    original_index: int
-    start_time_on_device: Optional[float] = None
-    end_time_on_device: Optional[float] = None
-
-
-@dataclass
-class Device:
-    operations: List[Operation] = field(default_factory=list)
-
-    @property
-    def end(self) -> float:
-        return sum(op.duration for op in self.operations)
-
-
-def _heuristic(size: Tuple[int, int]) -> int:
-    """
-    Heuristic function to calculate a score based on the size of a tuple.
-
-    :param size: Tuple representing the size of linear programming problem (m, n).
-    :return: An integer score based on the heuristic calculation.
-    """
-
-    return abs(.63 * (m := max(1, size[0])) ** 2.96 * (n := max(1, size[1])) ** .02 * log(n) ** 1.62
-               + 4.04 * m ** -4.11 * n ** 2.92)
+from .core import Device, Operation, empiric
 
 
 # --- Scheduling algorithm components (from your multi_device.py example) ---
 
-def get_multi_device_heuristic_schedule(schedule: Tuple[List[Device], List[List[Operation]]]) -> Tuple[
-    List[Device], List[List[Operation]]]:
-    all_operations: List[Operation] = []
-    for operations in schedule[1]:
-        all_operations.extend(operations)
-
-    all_operations.sort(key=lambda op: op.duration, reverse=True)
-
+def get_multi_device_heuristic_schedule(
+        devices: List[Device],
+        operations: List[Operation]
+) -> Tuple[List[Device], List[Operation]]:
+    operations.sort(key=lambda op: op.duration, reverse=True)
     # Create new device instances for the schedule based on the initial ones
     # The original devices in schedule.devices define the number and start times
-    new_devices = [Device() for _ in schedule[0]]
+    scheduled_devices = [Device() for _ in devices]
     # Assign operations to the new device instances
-    for operation in all_operations:
-        # Find the device that will finish earliest if this operation is added
+    for operation in operations:
+        # Find the device that will finish earliest if this operation is added,
         # This requires calculating the current end time of each device based on ops already on it
-        target_device = min(new_devices, key=lambda dev: dev.end)
+        target_device = min(scheduled_devices, key=lambda dev: dev.end)
         target_device.operations.append(operation)
 
     # Update the schedule's devices
-    # schedule.devices = new_devices
-    schedule = (new_devices, schedule[1])
-    for dev in new_devices:
-        current_op_start_time = 0
-        for op in dev.operations:
-            op.start_time_on_device = current_op_start_time
-            current_op_start_time += op.duration
-            op.end_time_on_device = current_op_start_time
-    return schedule
+    for new_device in scheduled_devices:
+        new_device.update_operation_times()
+
+    return scheduled_devices, operations
 
 
-def make_permutation_1_1(lagged_device: Device, advanced_device: Device, average_deadline: float) -> bool:
+def make_permutation_1_1(
+        lagged_device: Device,
+        advanced_device: Device,
+        average_deadline: float
+) -> bool:
     for i in range(len(lagged_device.operations)):
         for j in range(len(advanced_device.operations)):
             theta = lagged_device.operations[i].duration - advanced_device.operations[j].duration
@@ -80,7 +47,11 @@ def make_permutation_1_1(lagged_device: Device, advanced_device: Device, average
     return False
 
 
-def make_permutation_1_2(lagged_device: Device, advanced_device: Device, average_deadline: float) -> bool:
+def make_permutation_1_2(
+        lagged_device: Device,
+        advanced_device: Device,
+        average_deadline: float
+) -> bool:
     for i in range(len(lagged_device.operations)):
         # Iterate backwards for j and k to simplify pop logic or be very careful with indices
         for j_idx in range(len(advanced_device.operations)):
@@ -106,12 +77,16 @@ def make_permutation_1_2(lagged_device: Device, advanced_device: Device, average
                     lagged_device.operations.insert(i, adv_op_j)
                     lagged_device.operations.insert(i + 1, adv_op_k)  # Insert k after j
 
-                    advanced_device.operations.insert(j_idx, lagged_op_to_move)  # Insert at original j_idx spot
+                    advanced_device.operations.insert(j_idx, lagged_op_to_move)  # Insert at an original j_idx spot
                     return True
     return False
 
 
-def make_permutation_2_1(lagged_device: Device, advanced_device: Device, average_deadline: float) -> bool:
+def make_permutation_2_1(
+        lagged_device: Device,
+        advanced_device: Device,
+        average_deadline: float
+) -> bool:
     for i_idx in range(len(lagged_device.operations)):
         for j_idx in range(i_idx + 1, len(lagged_device.operations)):
             for k_idx in range(len(advanced_device.operations)):
@@ -138,7 +113,11 @@ def make_permutation_2_1(lagged_device: Device, advanced_device: Device, average
     return False
 
 
-def make_permutation_2_2(lagged_device: Device, advanced_device: Device, average_deadline: float) -> bool:
+def make_permutation_2_2(
+        lagged_device: Device,
+        advanced_device: Device,
+        average_deadline: float
+) -> bool:
     for i_idx in range(len(lagged_device.operations)):
         for j_idx in range(i_idx + 1, len(lagged_device.operations)):
             for k_idx in range(len(advanced_device.operations)):
@@ -171,35 +150,26 @@ def make_permutation_2_2(lagged_device: Device, advanced_device: Device, average
     return False
 
 
-def get_multi_device_schedule_A0(schedule: Tuple[List[Device], List[List[Operation]]]) -> List[Device]:
-    # Step 1: Get initial heuristic schedule
-    # get_multi_device_heuristic_schedule modifies schedule.devices
-    processed_schedule = get_multi_device_heuristic_schedule(schedule)
+def get_multi_device_schedule_A0(
+        devices: List[Device],
+        operations: List[Operation]
+) -> List[Device]:
+    processed_devices, processed_operations = get_multi_device_heuristic_schedule(devices, operations)
 
-    # Devices for balancing are taken from the processed_schedule
-    active_devices = processed_schedule[0]
-    if not active_devices:
-        return processed_schedule[0]  # No devices to balance
-
-    # Collect all operations once for sum_op_durations
-    all_operations_in_schedule: List[Operation] = []
-    for operations in processed_schedule[1]:
-        all_operations_in_schedule.extend(operations)
-
-    average_deadline = sum(op.duration for op in all_operations_in_schedule) / len(active_devices)
+    average_deadline = sum(op.duration for op in processed_operations) / len(processed_devices)
 
     # Balancing loop
     while True:
         # Check for convergence: if all devices end at roughly the same time
-        if not active_devices: break
-        first_dev_end = active_devices[0].end
-        if all(abs(dev.end - first_dev_end) < 1e-9 for dev in active_devices[1:]):
+        if not processed_devices: break
+        first_dev_end = processed_devices[0].end
+        if all(abs(dev.end - first_dev_end) < 1e-9 for dev in processed_devices[1:]):
             break
 
         # Identify lagged and advanced devices
         # Using a small tolerance for float comparisons against average_deadline
-        lagged_devices = [dev for dev in active_devices if dev.end > average_deadline + 1e-9]
-        advanced_devices = [dev for dev in active_devices if dev.end < average_deadline - 1e-9]
+        lagged_devices = [dev for dev in processed_devices if dev.end > average_deadline + 1e-9]
+        advanced_devices = [dev for dev in processed_devices if dev.end < average_deadline - 1e-9]
 
         if not lagged_devices or not advanced_devices:
             break  # No further balancing possible
@@ -224,7 +194,7 @@ def get_multi_device_schedule_A0(schedule: Tuple[List[Device], List[List[Operati
                 # make_permutation_1_2 needs at least 2 ops on advanced.
                 # make_permutation_2_1 can work if advanced_device is empty (transfers 2 from lagged, receives 1) - wait, no, it expects to pop from advanced.
                 # The permutations assume operations exist to be swapped.
-                # If advanced_device.operations is empty, only transfers *to* it without taking anything *from* it would work.
+                # If advanced_device.operations are empty, only transfers *to* it without taking anything *from* it would work.
                 # The current permutations are all swaps.
                 # Let's proceed with the given permutation functions.
                 pass
@@ -241,19 +211,18 @@ def get_multi_device_schedule_A0(schedule: Tuple[List[Device], List[List[Operati
 
     # Final update of operation's device attribute and their specific start/end times
     # This is important as permutations change ops on devices
-    for dev in active_devices:
-        current_op_start_time = 0
-        for op in dev.operations:
-            op.start_time_on_device = current_op_start_time
-            current_op_start_time += op.duration
-            op.end_time_on_device = current_op_start_time
+    for dev in processed_devices:
+        dev.update_operation_times()
 
-    # The schedule object was modified in place by get_multi_device_heuristic_schedule
-    # and the active_devices list refers to its devices.
-    return processed_schedule[0]
+    # The schedule object was modified in place by get_multi_device_heuristic_schedule,
+    # and the processed_devices list refers to its devices.
+    return processed_devices
 
 
-def get_order(sizes: List[Tuple[int, int]], threads: int) -> List[List[int]]:
+def get_order(
+        sizes: List[Tuple[int, int]],
+        threads: int
+) -> List[List[int]]:
     """
     Assigns the given sizes to the specified number of threads in a balanced manner
     using the MPMM-like scheduling algorithm.
@@ -265,13 +234,10 @@ def get_order(sizes: List[Tuple[int, int]], threads: int) -> List[List[int]]:
              of the tasks assigned to that thread.
     """
 
-    return [[op.original_index for op in device.operations]
+    return [[operation.original_index for operation in device.operations]
             for device in get_multi_device_schedule_A0(
-            ([
-                 Device() for _ in range(threads)],
-             [[Operation(duration=_heuristic(size_tuple), original_index=i)]
-              for i, size_tuple in enumerate(sizes)]
-            )
+            [Device() for _ in range(threads)],
+            [Operation(empiric(size_tuple), i) for i, size_tuple in enumerate(sizes)]
         )]
 
 
