@@ -45,3 +45,16 @@ class ElementData(BaseData):
 
     delta: Optional[float]  # delta_e
     w: Optional[float]  # w_e
+
+    def copy(self):
+        """Create a deep copy of the element data."""
+
+        b_e, b_e_1, b_e_2 = self.resource_constraints
+        return ElementData(
+            config=self.config,
+            coeffs_functional=self.coeffs_functional.copy(),
+            resource_constraints=(b_e.copy(), b_e_1.copy(), b_e_2.copy()),
+            aggregated_plan_costs=self.aggregated_plan_costs.copy(),
+            delta=self.delta,
+            w=self.w,
+        )
