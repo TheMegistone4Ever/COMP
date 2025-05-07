@@ -1,52 +1,24 @@
+from dataclasses import dataclass, field
 from math import log
-from typing import List, Tuple, Optional, TypeVar
-
-_Task = TypeVar('_Task', bound='Task')
+from typing import List, Tuple, Optional
 
 
+@dataclass
 class Operation:
-    def __init__(self, name: str, duration: float, original_index: int, task: Optional[_Task] = None):
-        self.name = name
-        self.duration = duration
-        self.original_index = original_index  # To track the original task/size
-        self.task = task
-        self.device: Optional[Device] = None
-        # For tracking scheduled times on device
-        self.start_time_on_device: Optional[float] = None
-        self.end_time_on_device: Optional[float] = None
-
-    def __repr__(self):
-        return (f"Operation(name='{self.name}', duration={self.duration:.2f}, "
-                f"original_idx={self.original_index})")
+    duration: float
+    original_index: int
+    start_time_on_device: Optional[float] = None
+    end_time_on_device: Optional[float] = None
 
 
-class Task:
-    def __init__(self, operations: List[Operation], name: Optional[str] = None):
-        self.name = name if name else f"Task_for_{operations[0].name}"
-        self.operations = operations
-        for op in self.operations:
-            op.task = self
-
-    def __repr__(self):
-        return f"Task(name='{self.name}', ops_count={len(self.operations)})"
-
-
+@dataclass
 class Device:
-    def __init__(self):
-        self.operations: List[Operation] = []
+    operations: List[Operation] = field(default_factory=list)
 
     @property
     def end(self) -> float:
         return sum(op.duration for op in self.operations)
 
-
-class Schedule:
-    def __init__(self, devices: List[Device], tasks: List[Task]):
-        self.devices = devices
-        self.tasks = tasks
-
-
-# --- End Helper classes ---
 
 def _heuristic(size: Tuple[int, int]) -> int:
     """
@@ -62,16 +34,17 @@ def _heuristic(size: Tuple[int, int]) -> int:
 
 # --- Scheduling algorithm components (from your multi_device.py example) ---
 
-def get_multi_device_heuristic_schedule(schedule: Schedule) -> Schedule:
+def get_multi_device_heuristic_schedule(schedule: Tuple[List[Device], List[List[Operation]]]) -> Tuple[
+    List[Device], List[List[Operation]]]:
     all_operations: List[Operation] = []
-    for task_obj in schedule.tasks:
-        all_operations.extend(task_obj.operations)
+    for operations in schedule[1]:
+        all_operations.extend(operations)
 
     all_operations.sort(key=lambda op: op.duration, reverse=True)
 
     # Create new device instances for the schedule based on the initial ones
     # The original devices in schedule.devices define the number and start times
-    new_devices = [Device() for _ in schedule.devices]
+    new_devices = [Device() for _ in schedule[0]]
     # Assign operations to the new device instances
     for operation in all_operations:
         # Find the device that will finish earliest if this operation is added
@@ -80,13 +53,11 @@ def get_multi_device_heuristic_schedule(schedule: Schedule) -> Schedule:
         target_device.operations.append(operation)
 
     # Update the schedule's devices
-    schedule.devices = new_devices
-
-    # Update operation's device attribute and their specific start/end times
+    # schedule.devices = new_devices
+    schedule = (new_devices, schedule[1])
     for dev in new_devices:
         current_op_start_time = 0
         for op in dev.operations:
-            op.device = dev
             op.start_time_on_device = current_op_start_time
             current_op_start_time += op.duration
             op.end_time_on_device = current_op_start_time
@@ -200,20 +171,20 @@ def make_permutation_2_2(lagged_device: Device, advanced_device: Device, average
     return False
 
 
-def get_multi_device_schedule_A0(schedule: Schedule) -> Schedule:
+def get_multi_device_schedule_A0(schedule: Tuple[List[Device], List[List[Operation]]]) -> List[Device]:
     # Step 1: Get initial heuristic schedule
     # get_multi_device_heuristic_schedule modifies schedule.devices
     processed_schedule = get_multi_device_heuristic_schedule(schedule)
 
     # Devices for balancing are taken from the processed_schedule
-    active_devices = processed_schedule.devices
+    active_devices = processed_schedule[0]
     if not active_devices:
-        return processed_schedule  # No devices to schedule on
+        return processed_schedule[0]  # No devices to balance
 
     # Collect all operations once for sum_op_durations
     all_operations_in_schedule: List[Operation] = []
-    for task_obj in processed_schedule.tasks:
-        all_operations_in_schedule.extend(task_obj.operations)
+    for operations in processed_schedule[1]:
+        all_operations_in_schedule.extend(operations)
 
     average_deadline = sum(op.duration for op in all_operations_in_schedule) / len(active_devices)
 
@@ -273,14 +244,13 @@ def get_multi_device_schedule_A0(schedule: Schedule) -> Schedule:
     for dev in active_devices:
         current_op_start_time = 0
         for op in dev.operations:
-            op.device = dev  # Ensure op.device is correct
             op.start_time_on_device = current_op_start_time
             current_op_start_time += op.duration
             op.end_time_on_device = current_op_start_time
 
     # The schedule object was modified in place by get_multi_device_heuristic_schedule
     # and the active_devices list refers to its devices.
-    return processed_schedule
+    return processed_schedule[0]
 
 
 def get_order(sizes: List[Tuple[int, int]], threads: int) -> List[List[int]]:
@@ -295,26 +265,14 @@ def get_order(sizes: List[Tuple[int, int]], threads: int) -> List[List[int]]:
              of the tasks assigned to that thread.
     """
 
-    # Assuming all threads start at time 0 for current task distribution problem
-    # Ensure correct mapping from scheduled devices back to the thread_assignments list
-    # The order of devices in final_schedule.devices should correspond to 0..threads-1
-    # if their names were "Thread0", "Thread1", etc. and no reordering of devices by name happened.
-    # The `get_multi_device_heuristic_schedule` sorts devices by `initial_start_time`.
-    # Since all are 0, their relative order might be preserved or depend on sort stability.
-    # To be safe, map by device name or maintain an explicit device_to_thread_index_map.
-    # For simplicity, assume the order in final_schedule.devices is the desired 0..threads-1 order.
-
     return [[op.original_index for op in device.operations]
             for device in get_multi_device_schedule_A0(
-            Schedule(
-                devices=[Device() for _ in range(threads)],
-                tasks=[
-                    Task(operations=[Operation(name=f"OpIdx{i}", duration=_heuristic(size_tuple), original_index=i)],
-                         name=f"TaskForOpIdx{i}")
-                    for i, size_tuple in enumerate(sizes)
-                ]
+            ([
+                 Device() for _ in range(threads)],
+             [[Operation(duration=_heuristic(size_tuple), original_index=i)]
+              for i, size_tuple in enumerate(sizes)]
             )
-        ).devices]
+        )]
 
 
 if __name__ == "__main__":
