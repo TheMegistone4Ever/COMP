@@ -1,11 +1,24 @@
 from abc import abstractmethod
-from typing import Tuple
+from typing import Tuple, Dict, List, Callable
 
-from comp.models import CenterData
+from comp.models import CenterData, ElementData
 from comp.parallelization import ParallelExecutor, get_order
+from comp.solvers.core.element import ElementSolver
+from comp.solvers.factories import new_element_solver
 from comp.utils import (tab_out, stringify, assert_valid_dimensions, assert_positive, assert_non_negative,
                         get_lp_problem_sizes)
 from .base import BaseSolver
+
+
+def execute_solution_from_callable(
+        element_index: int,
+        element_data: ElementData,
+        modify_constraints: Callable[[int, ElementSolver], None],
+) -> Tuple[float, Dict[str, List[float]]]:
+    """Execute the solution from a callable."""
+
+    modify_constraints(element_index, (element_solver := new_element_solver(element_data)))
+    return element_solver.solve()
 
 
 class CenterSolver(BaseSolver[CenterData]):
@@ -14,7 +27,8 @@ class CenterSolver(BaseSolver[CenterData]):
     def __init__(self, data: CenterData):
         super().__init__(data)
 
-        self.element_solvers = list()
+        self.element_solutions: List[Tuple[float, Dict[str, List[float]]]] = list()
+        self.element_solvers: List[ElementSolver] = list()
         self.order = get_order(get_lp_problem_sizes(data.elements), data.config.num_threads)
         self.parallel_executor = ParallelExecutor(
             min_threshold=data.config.min_parallelisation_threshold,
@@ -23,30 +37,23 @@ class CenterSolver(BaseSolver[CenterData]):
         )
 
     @abstractmethod
-    def add_constraints(self) -> None:
-        """Add constraints to the element's solvers."""
+    def modify_constraints(self, element_index, element_solver) -> None:
+        """Add constraints to the element's solver."""
 
         pass
 
     def quality_functional(self) -> Tuple[str, float]:
         """Calculate the center's quality functional: sum_e (d_e^T * y_e)."""
 
-        y_e_list = self.parallel_executor.execute([lambda solver=solver_e: solver.solve()[1]["y_e"]
-                                                   for solver_e in self.element_solvers])
-
-        sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], y))
-                for e, y in enumerate(y_e_list) if y is not None]
-
+        sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], sol[1]["y_e"]))
+                for e, sol in enumerate(self.element_solutions) if sol is not None]
         return stringify(sums), sum(sums)
 
-    def setup(self, add_constraints=True) -> None:
-        """Set up the optimization problem."""
+    def coordinate(self) -> None:
+        """Coordinates the optimization problem."""
 
         if self.setup_done:
             return
-
-        if add_constraints:
-            self.add_constraints()
 
         self.setup_done = True
 
@@ -63,8 +70,15 @@ class CenterSolver(BaseSolver[CenterData]):
             ("Center Parallelization Order", stringify(self.order)),
         ))
 
-        self.parallel_executor.execute([lambda solver=solver_e: solver.print_results()
-                                        for solver_e in self.element_solvers])
+        if len(self.element_solvers) != len(self.element_solutions):
+            for e, (solution, element_data) in enumerate(zip(self.element_solutions, self.data.elements)):
+                solver_e = new_element_solver(element_data)
+                solver_e.set_solution(solution)
+                solver_e.setup()
+                self.element_solvers.append(solver_e)
+
+        for solver_e in self.element_solvers:
+            solver_e.print_results()
 
         print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
