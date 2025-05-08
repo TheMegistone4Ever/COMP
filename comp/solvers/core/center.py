@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from functools import partial
 from typing import Tuple, Dict, List, Callable
 
 from comp.models import CenterData, ElementData
@@ -55,10 +56,17 @@ class CenterSolver(BaseSolver[CenterData]):
         if self.setup_done:
             return
 
+        self.element_solutions = self.parallel_executor.execute(
+            [partial(execute_solution_from_callable, e, element_data, self.modify_constraints)
+             for e, element_data in enumerate(self.data.elements)])
+
         self.setup_done = True
 
     def print_results(self) -> None:
         """Print the results of the optimization for the center problem."""
+
+        if not self.setup_done:
+            raise RuntimeError("The optimization problem has not been set up yet. Call coordinate() first.")
 
         tab_out(f"\nInput data for center {stringify(self.data.config.id)}", (
             ("Center Type", stringify(self.data.config.type)),

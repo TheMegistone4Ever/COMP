@@ -34,10 +34,16 @@ class ElementSolver(BaseSolver[ElementData]):
         pass
 
     @abstractmethod
-    def get_solution(self) -> Dict[str, Any]:
+    def get_solution(self) -> Dict[str, List[float]]:
         """Extract the solution from the element's solver."""
 
         pass
+
+    def set_solution(self, solution: Tuple[float, Dict[str, List[float]]]) -> None:
+        """Set the solution of the element's solver."""
+
+        self.objective_value, self.solution = solution
+        self.solved = True
 
     @abstractmethod
     def get_plan_component(self, pos: int) -> Any:
@@ -68,7 +74,7 @@ class ElementSolver(BaseSolver[ElementData]):
 
         self.setup_done = True
 
-    def solve(self) -> Tuple[float, Any]:
+    def solve(self) -> Tuple[float, Dict[str, List[float]]]:
         """Solve the optimization problem for the element."""
 
         if not self.setup_done:
