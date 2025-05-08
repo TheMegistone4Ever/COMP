@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, List
 
 from numpy import ndarray
 
 from .base import BaseConfig, BaseData
+
+ElementSolutionType = Tuple[float, Dict[str, List[float]]]
 
 
 class ElementType(Enum):
@@ -46,8 +48,17 @@ class ElementData(BaseData):
     delta: Optional[float]  # delta_e
     w: Optional[float]  # w_e
 
-    def copy(self):
-        """Create a deep copy of the element data."""
+    def copy(self) -> "ElementData":
+        """
+        Create a deep copy of the ElementData instance.
+
+        This method generates a new ElementData object with all its mutable
+        attributes (numpy arrays) copied, ensuring that modifications to the
+        new instance do not affect the original.
+        Immutable attributes like delta and w are assigned directly.
+
+        :return: A new ElementData instance that is a deep copy of the original.
+        """
 
         b_e, b_e_1, b_e_2 = self.resource_constraints
         return ElementData(

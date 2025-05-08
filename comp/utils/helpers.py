@@ -1,7 +1,7 @@
 from dataclasses import replace
 from enum import ReprEnum
 from numbers import Number
-from typing import Any, Iterable, List, Optional, Protocol, Sequence, TypeVar, Tuple
+from typing import Any, Iterable, List, Optional, Protocol, Sequence, TypeVar, Tuple, Union
 
 from numpy import array, ndarray
 from tabulate import tabulate
@@ -10,22 +10,23 @@ from comp.models import ElementData
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
-    """Pretty-prints a table with the given data and headers."""
+    """
+    Print data in a formatted table using the `tabulate` library.
+
+    :param subscription: A title or description for the table, printed before it.
+    :param data: A sequence of sequences (e.g., list of lists) representing table rows.
+    :param headers: A list of strings for table headers.
+    Defaults to ("Parameter", "Value").
+    """
 
     print(f"\n{subscription}:\n{tabulate(data, headers, "grid")}")
 
 
 def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
-    """
-    Formats n-dimensional tensors (nested lists/arrays) for better readability.
+    """Format n-dimensional tensors (nested lists/arrays/tuples, numbers, enums) for readable string output.
 
-    Args:
-        tensor: Input tensor (can be a number, list, nested list, or numpy array)
-        indent: Number of spaces for each level of indentation
-        precision: Number of decimal places for floating-point numbers
-
-    Returns:
-        str: Formatted string representation of the tensor
+    This function recursively formats the input, converting numpy arrays to lists,
+    applying specified precision to floats, and indenting nested structures.
 
     Examples:
         >>> stringify(42)
@@ -37,10 +38,23 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
             [1, 2],
             [3, 4]
         ]
+
+    :param tensor: The input data to format (e.g., number, list, tuple, numpy array, ReprEnum).
+    :param indent: The number of spaces for each indentation level in nested structures.
+    :param precision: The number of decimal places for floating-point numbers.
+    :return: A string representation of the formatted tensor.
     """
 
-    def convert_ndarrays(obj):
-        """Helper function to convert numpy arrays to list recursively"""
+    def convert_ndarrays(obj: Any) -> Any:
+        """
+        Recursively convert numpy arrays within a nested structure to Python lists.
+
+        Other list/tuple structures are preserved.
+        Non-collection items are returned as is.
+
+        :param obj: The object to process, potentially containing numpy arrays.
+        :return: The object with all numpy arrays converted to lists.
+        """
 
         if isinstance(obj, ndarray):
             return obj.tolist()
@@ -51,19 +65,40 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
     tensor = convert_ndarrays(tensor)
 
     def format_number(x: Number) -> str:
-        """Helper function to format numbers with consistent precision"""
+        """
+        Format a number as a string, applying precision to floats.
+
+        :param x: The number (int, float, etc.) to format.
+        :return: String representation of the number, rounded if `float`.
+        """
 
         if isinstance(x, float):
             return str(round(x, precision))
         return str(x)
 
     def is_nested(x: Any) -> bool:
-        """Helper function to check if an object is a nested structure"""
+        """
+        Check if an object is a nested list or tuple.
+
+        A structure is considered nested if it's a list or tuple containing
+        at least one other list, tuple, or numpy array as an element.
+
+        :param x: The object to check.
+        :return: True if the object is a nested list/tuple, False otherwise.
+        """
 
         return isinstance(x, (list, tuple)) and any(isinstance(item, (list, tuple, ndarray)) for item in x)
 
     def format_recursive(x: Any, level: int = 0) -> str:
-        """Recursively format nested structures"""
+        """
+        Recursively format an object into a string with indentation for nested structures.
+
+        Handles numbers, ReprEnums, non-nested lists/tuples, and nested lists/tuples.
+
+        :param x: The object to format.
+        :param level: The current nesting level, used for indentation.
+        :return: The formatted string representation of the object.
+        """
 
         # Handle enums with custom __str__ method
         if isinstance(x, ReprEnum):
@@ -97,7 +132,19 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
 
 
 def copy_coeffs(element: ElementData, coeffs_functional: Optional[ndarray] = None) -> ElementData:
-    """Creates a copy of an ElementData instance with optionally modified coeffs_functional."""
+    """
+    Create a copy of an ElementData instance, optionally replacing its functional coefficients.
+
+    If `coeffs_functional` is None, the original element data is returned.
+    Otherwise, a new ElementData instance is created with all attributes from the original `element`
+    except for `coeffs_functional`, which is set to the provided new value.
+
+    :param element: The original ElementData instance.
+    :param coeffs_functional: An optional numpy ndarray to replace the
+                              `coeffs_functional` in the new copy.
+    :return: The original `element` if `coeffs_functional` is None, or a new `ElementData`
+             instance with updated coefficients.
+    """
 
     return element if coeffs_functional is None else replace(element, coeffs_functional=coeffs_functional)
 
@@ -108,20 +155,20 @@ class SupportsAdd(Protocol):
     def __add__(self, other: "SupportsAdd") -> "SupportsAdd": ...
 
 
-T = TypeVar("T", bound=SupportsAdd)
+T_lp_sum = TypeVar("T_lp_sum", bound=SupportsAdd)
 
 
-def lp_sum(variables: Iterable[T]) -> T | Any:
+def lp_sum(variables: Iterable[T_lp_sum]) -> Union[T_lp_sum, int]:
     """
-    Summation function for linear programming variables that supports any sequence
-    of elements implementing the addition operator.
+    Sum a sequence of elements that support addition, returning 0 for an empty sequence.
 
-    Args:
-        variables: A sequence of addable elements (typically LP variables or expressions)
+    This function is typically used for summing linear programming variables or expressions.
+    It iterates through the `variables` and accumulates their sum.
 
-    Returns:
-        The sum of all elements in the sequence.
-        Returns 0 if a sequence is empty.
+    :param variables: This is iterable of elements that support the `__add__` operator.
+    :return: The sum of all elements in `variables`.
+    If `variables` is empty, returns 0 (int).
+    Otherwise, returns a value of the same type as the elements in `variables`.
     """
 
     iterator = iter(variables)
@@ -137,7 +184,16 @@ def lp_sum(variables: Iterable[T]) -> T | Any:
 
 
 def get_lp_problem_sizes(data: List[ElementData]) -> List[Tuple[int, int]]:
-    """Get the sizes of the linear programming problem for each element."""
+    """
+    Extract the linear programming problem sizes (constraints, variables) for a list of elements.
+
+    For each ElementData object in the input list, this function retrieves the number
+    of constraints and decision variables from its configuration.
+
+    :param data: A list of ElementData objects.
+    :return: A list of tuples, where each tuple (num_constraints, num_decision_variables)
+             corresponds to an element in the input list.
+    """
 
     return [(d.config.num_constraints, d.config.num_decision_variables) for d in data]
 

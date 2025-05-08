@@ -5,13 +5,15 @@ from comp.solvers.element import ElementLinearFirst, ElementLinearSecond
 
 def new_element_solver(data: ElementData) -> ElementSolver:
     """
-    Factory function to create an element solver based on the specified type.
+    Create a specific element solver instance based on the element type in data.
 
-    Args:
-        data: The data associated with the element.
+    This factory function inspects the `data.config.type` (ElementType enum)
+    and returns an appropriate subclass of ElementSolver (e.g., ElementLinearFirst,
+    ElementLinearSecond).
 
-    Returns:
-        An instance of the appropriate solver class based on the element type.
+    :param data: The ElementData object containing the configuration, including the element type.
+    :raises ValueError: If the `data.config.type` is unknown or not supported.
+    :return: An instance of a concrete ElementSolver subclass.
     """
 
     if data.config.type == ElementType.DECENTRALIZED:
@@ -23,7 +25,16 @@ def new_element_solver(data: ElementData) -> ElementSolver:
 
 
 def execute_new_solver_from_data(element_data: ElementData) -> float:
-    """Create solver from data, solve, and return the objective value."""
+    """
+    Create an element solver from data, solve it, and return its objective value.
+
+    This utility function simplifies the process of creating an element solver using
+    `new_element_solver`, setting it up, solving it, and then extracting the
+    primary objective value from the solution.
+
+    :param element_data: The ElementData object for the element to be solved.
+    :return: The objective value (float) of the solved element problem.
+    """
 
     solver = new_element_solver(element_data)
     solver.setup()

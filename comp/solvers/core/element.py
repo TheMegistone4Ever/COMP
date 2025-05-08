@@ -1,17 +1,32 @@
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any, Dict, Optional, List
 
 from ortools.linear_solver import pywraplp
 
-from comp.models import ElementData
-from comp.utils import tab_out, stringify, assert_valid_dimensions, assert_non_negative, assert_positive
+from comp.models import ElementData, ElementSolutionType
+from comp.utils import (
+    assert_non_negative,
+    assert_positive,
+    assert_valid_dimensions,
+    stringify,
+    tab_out,
+)
 from .base import BaseSolver
 
 
 class ElementSolver(BaseSolver[ElementData]):
     """Base class for all element's solvers."""
 
-    def __init__(self, data: ElementData):
+    def __init__(self, data: ElementData) -> None:
+        """
+        Initialize the ElementSolver.
+
+        Sets up the base solver, creates an OR-Tools GLOP solver instance,
+        and initializes solution-related attributes.
+
+        :param data: The ElementData object containing configuration for this element.
+        """
+
         super().__init__(data)
 
         self.solver = pywraplp.Solver.CreateSolver("GLOP")
@@ -23,44 +38,96 @@ class ElementSolver(BaseSolver[ElementData]):
 
     @abstractmethod
     def setup_constraints(self) -> None:
-        """Set up optimization constraints for the element."""
+        """
+        Abstract method to set up optimization constraints for the element.
+
+        Concrete element solver implementations must define this to add
+        problem-specific constraints to the OR-Tools solver.
+        """
 
         pass
 
     @abstractmethod
     def setup_objective(self) -> None:
-        """Set up the objective function for the element."""
+        """
+        Abstract method to set up the objective function for the element.
+
+        Concrete element solver implementations must define this to specify
+        the goal (e.g., maximization of a linear expression) in the OR-Tools solver.
+        """
 
         pass
 
     @abstractmethod
     def get_solution(self) -> Dict[str, List[float]]:
-        """Extract the solution from the element's solver."""
+        """
+        Abstract method to extract the solution from the OR-Tools solver.
+
+        Concrete implementations should retrieve the values of decision variables
+        and format them into a dictionary.
+        The list should contain float values.
+
+        :return: A dictionary where keys are variable names (e.g., "y_e") and
+                 values are lists of their corresponding float solution values.
+        """
 
         pass
 
-    def set_solution(self, solution: Tuple[float, Dict[str, List[float]]]) -> None:
-        """Set the solution of the element's solver."""
+    def set_solution(self, solution: ElementSolutionType) -> None:
+        """
+        Set the solution of the element's solver from pre-computed results.
+
+        This is used when the solution is obtained externally (e.g., by a center solver)
+        and needs to be populated into this element solver instance.
+
+        :param solution: A tuple containing the objective value (float) and a
+                         dictionary of solution variables (Dict[str, List[float]]).
+        """
 
         self.objective_value, self.solution = solution
         self.solved = True
 
     @abstractmethod
     def get_plan_component(self, pos: int) -> Any:
-        """Get the vector component of the element's plan at a specific position."""
+        """
+        Abstract method to get a specific component of the element's plan variables.
+
+        This is used to access individual decision variables (or expressions involving them)
+        by their position/index, typically for constructing constraints or objectives
+        in a linked (e.g., center) solver.
+
+        :param pos: The index of the desired plan component (decision variable).
+        :return: The plan component, typically an OR-Tools variable object or similar.
+        """
 
         pass
 
     def setup_variables(self) -> None:
-        """Set up optimization variables for the element."""
+        """
+        Set up optimization variables (decision variables) for the element.
+
+        This method creates the primary decision variables (y_e) for the element's
+        problem within the OR-Tools solver.
+        Concrete subclasses might extend this to add more variables.
+        """
 
         self.y_e = [
             self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
             for i in range(self.data.config.num_decision_variables)
         ]
 
-    def setup(self, set_variables=True, set_constraints=True, set_objective=True) -> None:
-        """Set up the optimization problem for the element."""
+    def setup(self, set_variables: bool = True, set_constraints: bool = True, set_objective: bool = True) -> None:
+        """
+        Set up the complete optimization problem for the element.
+
+        This orchestrates the setup process by optionally calling `setup_variables`,
+        `setup_constraints`, and `setup_objective`.
+        It ensures setup is done only once.
+
+        :param set_variables: If True, call `setup_variables`.
+        :param set_constraints: If True, call `setup_constraints`.
+        :param set_objective: If True, call `setup_objective`.
+        """
 
         if self.setup_done:
             return
@@ -74,8 +141,19 @@ class ElementSolver(BaseSolver[ElementData]):
 
         self.setup_done = True
 
-    def solve(self) -> Tuple[float, Dict[str, List[float]]]:
-        """Solve the optimization problem for the element."""
+    def solve(self) -> ElementSolutionType:
+        """
+        Solve the optimization problem for the element.
+
+        If the problem hasn't been set up, it raises a RuntimeError.
+        If not already solved, it calls the OR-Tools solver.
+        If an optimal solution is found, it stores and returns the objective value and solution variables.
+        Otherwise, it returns infinity and an empty dictionary.
+
+        :raises RuntimeError: If `setup()` has not been called first.
+        :return: A tuple containing the objective value (float, or float("inf") if no solution)
+                 and a dictionary of solution variables (Dict[str, List[float]]).
+        """
 
         if not self.setup_done:
             raise RuntimeError("Solver setup is not done. Call setup() before solve().")
@@ -91,12 +169,25 @@ class ElementSolver(BaseSolver[ElementData]):
         return self.objective_value, self.solution
 
     def get_objective_value(self) -> float:
-        """Get the objective value of the optimization for the element problem."""
+        """
+        Get the objective value of the solved optimization problem for the element.
+
+        Requires `solve()` to have been successfully run.
+
+        :return: The objective value as a float, or None if not solved or no optimal solution.
+        """
 
         return self.objective_value
 
     def print_results(self) -> None:
-        """Print the results of the optimization for the element problem."""
+        """
+        Print the results of the optimization for the element problem.
+
+        Solves the problem if not already solved.
+        If no optimal solution is found, print a message.
+        Otherwise, displays input data and the element's quality functional.
+        Concrete subclasses may extend this to print more specific solution details.
+        """
 
         element_objective, dict_solved = self.solve()
 
@@ -119,7 +210,14 @@ class ElementSolver(BaseSolver[ElementData]):
         print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
     def validate_input(self) -> None:
-        """Validate the input data of the optimization for the element problem."""
+        """
+        Validate the input data for the element optimization problem.
+
+        Checks dimensions of various coefficient arrays and constraint vectors
+        against configured numbers of decision variables and constraints.
+        It also validates non-negativity of delta and ID, and positivity of
+        variable/constraint counts.
+        """
 
         assert_valid_dimensions(
             [self.data.coeffs_functional,

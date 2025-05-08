@@ -5,11 +5,15 @@ from comp.parallelization.core import Device, Operation, empiric
 
 def get_multi_device_heuristic_order(threads: int, operations: List[Operation]) -> List[Device]:
     """
-    Assigns operations to devices in a balanced manner using a heuristic scheduling algorithm.
+    Assign operations to a specified number of devices using the longest processing time (LPT) heuristic.
 
-    :param threads: Number of threads (devices) to distribute the tasks across.
-    :param operations: List of operations to be ordered.
-    :return: List of devices with their assigned operations.
+    Operations are first sorted by duration in descending order.
+    Then, each operation is assigned to the device that currently has the minimum total processing time.
+    After all assignments, operation times on each device are updated.
+
+    :param threads: The number of threads (devices) to distribute the operations across.
+    :param operations: A list of Operation objects to be scheduled.
+    :return: A list of Device objects, each with its assigned operations and updated times.
     """
 
     operations.sort(key=lambda op: op.duration, reverse=True)
@@ -26,12 +30,18 @@ def get_multi_device_heuristic_order(threads: int, operations: List[Operation]) 
 
 def make_permutation_1_1(lagged: Device, advanced: Device, average_deadline: float) -> bool:
     """
-    This function attempts to swap one operation from the lagged device with one operation from the advanced device.
+    Attempt to swap one operation from a lagged device with one from an advanced device.
 
-    :param lagged: Device with operations that are lagging behind.
-    :param advanced: Device with operations that are ahead of order.
-    :param average_deadline: The average deadline for the operations.
-    :return: True if a valid swap was made, False otherwise.
+    This function tries to improve load balance by moving a longer operation from the
+    lagged device to the advanced device.
+    A shorter operation from the advanced
+    device to the lagged device, if the swap reduces the lagged device's end time
+    sufficiently without making it finish before the average deadline by too much.
+
+    :param lagged: The Device instance that is currently finishing later (lagging).
+    :param advanced: The Device instance that is currently finishing earlier (advanced).
+    :param average_deadline: The target average completion time for devices.
+    :return: True if a beneficial swap was performed, False otherwise.
     """
 
     for i in range(len(lagged.operations)):
@@ -47,12 +57,16 @@ def make_permutation_1_1(lagged: Device, advanced: Device, average_deadline: flo
 
 def make_permutation_1_2(lagged: Device, advanced: Device, average_deadline: float) -> bool:
     """
-    This function attempts to swap one operation from the lagged device with two operations from the advanced device.
+    Attempt to swap one operation from a lagged device with two from an advanced device.
 
-    :param lagged: Device with operations that are lagging behind.
-    :param advanced: Device with operations that are ahead of order.
-    :param average_deadline: The average deadline for the operations.
-    :return: True if a valid swap was made, False otherwise.
+    This function tries to improve load balance by moving one operation from the lagged
+    device and replacing it with two operations from the advanced device if this
+    swap reduces the lagged device's end time sufficiently.
+
+    :param lagged: The Device instance that is currently finishing later (lagging).
+    :param advanced: The Device instance that is currently finishing earlier (advanced).
+    :param average_deadline: The target average completion time for devices.
+    :return: True if a beneficial swap was performed, False otherwise.
     """
 
     for i in range(len(lagged.operations)):
@@ -71,12 +85,16 @@ def make_permutation_1_2(lagged: Device, advanced: Device, average_deadline: flo
 
 def make_permutation_2_1(lagged: Device, advanced: Device, average_deadline: float) -> bool:
     """
-    This function attempts to swap two operations from the lagged device with one operation from the advanced device.
+    Attempt to swap two operations from a lagged device with one from an advanced device.
 
-    :param lagged: Device with operations that are lagging behind.
-    :param advanced: Device with operations that are ahead of order.
-    :param average_deadline: The average deadline for the operations.
-    :return: True if a valid swap was made, False otherwise.
+    This function tries to improve load balance by moving two operations from the lagged
+    device and replacing them with one operation from the advanced device if this
+    swap reduces the lagged device's end time sufficiently.
+
+    :param lagged: The Device instance that is currently finishing later (lagging).
+    :param advanced: The Device instance that is currently finishing earlier (advanced).
+    :param average_deadline: The target average completion time for devices.
+    :return: True if a beneficial swap was performed, False otherwise.
     """
 
     for i in range(len(lagged.operations)):
@@ -95,12 +113,16 @@ def make_permutation_2_1(lagged: Device, advanced: Device, average_deadline: flo
 
 def make_permutation_2_2(lagged: Device, advanced: Device, average_deadline: float) -> bool:
     """
-    This function attempts to swap two operations from the lagged device with two operations from the advanced device.
+    Attempt to swap two operations from a lagged device with two from an advanced device.
 
-    :param lagged: Device with operations that are lagging behind.
-    :param advanced: Device with operations that are ahead of order.
-    :param average_deadline: The average deadline for the operations.
-    :return: True if a valid swap was made, False otherwise.
+    This function tries to improve load balance by moving two operations from the lagged
+    device and replacing them with two operations from the advanced device if this
+    swap reduces the lagged device's end time sufficiently.
+
+    :param lagged: The Device instance that is currently finishing later (lagging).
+    :param advanced: The Device instance that is currently finishing earlier (advanced).
+    :param average_deadline: The target average completion time for devices.
+    :return: True if a beneficial swap was performed, False otherwise.
     """
 
     for i in range(len(lagged.operations)):
@@ -121,12 +143,17 @@ def make_permutation_2_2(lagged: Device, advanced: Device, average_deadline: flo
 
 def get_multi_device_order_A0(threads: int, operations: List[Operation], tolerance: float = 1e-9) -> List[Device]:
     """
-    Assigns operations to devices in a balanced manner using a heuristic scheduling algorithm.
+    Assign operations to devices aiming for balanced end times using iterative permutation heuristics.
 
-    :param threads: Number of threads (devices) to distribute the tasks across.
-    :param operations: List of operations to be ordered.
-    :param tolerance: Tolerance for checking if devices are balanced.
-    :return: List of devices with their assigned operations.
+    Initially, operations are assigned using a heuristic (LPT). Then, iterative refinement
+    is applied using permutation strategies (1-1, 1-2, 2-1, 2-2 swaps) between the most
+    lagged device and advanced devices to balance a load until end times are within tolerance
+    or no further improvements can be made.
+
+    :param threads: The number of threads (devices) to distribute tasks across.
+    :param operations: A list of Operation objects to be ordered.
+    :param tolerance: The tolerance for checking if device end times are balanced.
+    :return: A list of Device objects with their assigned operations, balanced as much as possible.
     """
 
     processed_devices = get_multi_device_heuristic_order(threads, operations)
@@ -172,14 +199,18 @@ def get_multi_device_order_A0(threads: int, operations: List[Operation], toleran
 
 def get_order(sizes: List[Tuple[int, int]], threads: int) -> List[List[int]]:
     """
-    Assigns the given sizes to the specified number of threads in a balanced manner
-    using the MPMM-like scheduling algorithm.
+    Assign tasks, defined by their sizes, to threads for balanced parallel execution.
 
-    :param sizes: List of tuples representing the characteristics of tasks to be assigned.
-                  Each tuple (e.g., (m, n)) is converted to a duration via _heuristic.
-    :param threads: Number of threads (devices) to distribute the tasks across.
-    :return: List of lists, where each inner list contains the original indices
-             of the tasks assigned to that thread.
+    This function converts task sizes into operation durations using an empiric function,
+    then uses a multi-device scheduling algorithm (A0) to distribute these operations
+    (tasks) across the specified number of threads.
+    The result is a list of task indices assigned to each thread.
+
+    :param sizes: A list of tuples, where each tuple (m, n) represents the characteristics
+                  (e.g., constraints and variables) of a task.
+    :param threads: The number of threads (devices) to distribute the tasks across.
+    :return: A list of lists, where each inner list contains the original indices of the
+             tasks assigned to the corresponding thread.
     """
 
     return [[operation.original_index for operation in device.operations]

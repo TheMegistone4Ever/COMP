@@ -1,13 +1,19 @@
 from abc import abstractmethod
 from functools import partial
-from typing import Tuple, Dict, List, Callable
+from typing import Tuple, List, Callable
 
-from comp.models import CenterData, ElementData
+from comp.models import CenterData, ElementData, ElementSolutionType
 from comp.parallelization import ParallelExecutor, get_order
 from comp.solvers.core.element import ElementSolver
 from comp.solvers.factories import new_element_solver
-from comp.utils import (tab_out, stringify, assert_valid_dimensions, assert_positive, assert_non_negative,
-                        get_lp_problem_sizes)
+from comp.utils import (
+    assert_non_negative,
+    assert_positive,
+    assert_valid_dimensions,
+    get_lp_problem_sizes,
+    stringify,
+    tab_out,
+)
 from .base import BaseSolver
 
 
@@ -15,8 +21,21 @@ def execute_solution_from_callable(
         element_index: int,
         element_data: ElementData,
         modify_constraints: Callable[[int, ElementSolver], None],
-) -> Tuple[float, Dict[str, List[float]]]:
-    """Execute the solution from a callable."""
+) -> ElementSolutionType:
+    """
+    Create, configure, and solve an element solver, then return its solution.
+
+    This function instantiates a new element solver using the provided element data.
+    It then applies problem-specific modifications via the `modify_constraints`
+    callable and solves the element's optimization problem.
+
+    :param element_index: The index of the element being solved.
+    :param element_data: The ElementData for the specific element.
+    :param modify_constraints: A callable that takes the element index and the
+                               ElementSolver instance to apply specific constraints or objective modifications.
+    :return: A tuple containing the objective value (float) and a dictionary
+             representing the solution variables (e.g., {"y_e": [values]}).
+    """
 
     modify_constraints(element_index, (element_solver := new_element_solver(element_data)))
     return element_solver.solve()
@@ -25,10 +44,19 @@ def execute_solution_from_callable(
 class CenterSolver(BaseSolver[CenterData]):
     """Base class for all center's solvers."""
 
-    def __init__(self, data: CenterData):
+    def __init__(self, data: CenterData) -> None:
+        """
+        Initialize the CenterSolver.
+
+        Sets up the base solver, initializes lists for element solutions and solvers,
+        determines the parallelization order for elements, and creates a ParallelExecutor instance.
+
+        :param data: The CenterData object containing configuration for the center problem.
+        """
+
         super().__init__(data)
 
-        self.element_solutions: List[Tuple[float, Dict[str, List[float]]]] = list()
+        self.element_solutions: List[ElementSolutionType] = list()
         self.element_solvers: List[ElementSolver] = list()
         self.order = get_order(get_lp_problem_sizes(data.elements), data.config.num_threads)
         self.parallel_executor = ParallelExecutor(
@@ -38,20 +66,45 @@ class CenterSolver(BaseSolver[CenterData]):
         )
 
     @abstractmethod
-    def modify_constraints(self, element_index, element_solver) -> None:
-        """Add constraints to the element's solver."""
+    def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
+        """
+        Abstract method to add center-specific constraints to an element's solver.
+
+        Concrete center solver implementations must provide this method to tailor
+        the element's optimization problem according to the center's strategy.
+
+        :param element_index: The index of the element whose solver is being modified.
+        :param element_solver: The ElementSolver instance for the specific element.
+        """
 
         pass
 
     def quality_functional(self) -> Tuple[str, float]:
-        """Calculate the center's quality functional: sum_e (d_e^T * y_e)."""
+        """
+        Calculate the center's overall quality functional.
+
+        This is typically the sum of (d_e^T * y_e) over all elements, where d_e are
+        the center's coefficients for element e, and y_e is element e's plan.
+        Returns both a string representation of individual sums and the total sum.
+
+        :return: A tuple containing a string representation of the sums for each element
+                 and the total sum as a float.
+        """
 
         sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], sol[1]["y_e"]))
                 for e, sol in enumerate(self.element_solutions) if sol is not None]
         return stringify(sums), sum(sums)
 
     def coordinate(self) -> None:
-        """Coordinates the optimization problem."""
+        """
+        Coordinate the optimization process for all elements.
+
+        If not already set up, this method executes the solution process for each
+        element, potentially in parallel.
+        It uses the `execute_solution_from_callable` function, passing `self.modify_constraints
+        ` to tailor each element's problem.
+        The results are stored in `self.element_solutions`.
+        """
 
         if self.setup_done:
             return
@@ -63,7 +116,15 @@ class CenterSolver(BaseSolver[CenterData]):
         self.setup_done = True
 
     def print_results(self) -> None:
-        """Print the results of the optimization for the center problem."""
+        """
+        Print the comprehensive results of the center's optimization problem.
+
+        Outputs the input data for the center, its configuration, parallelization order,
+        and then calls `print_results` for each element solver.
+        Finally, prints the center's own quality functional.
+
+        :raises RuntimeError: If `coordinate()` has not been called first.
+        """
 
         if not self.setup_done:
             raise RuntimeError("The optimization problem has not been set up yet. Call coordinate() first.")
@@ -91,7 +152,12 @@ class CenterSolver(BaseSolver[CenterData]):
         print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
     def validate_input(self) -> None:
-        """Validate the input data of the optimization for the center problem."""
+        """
+        Validate the input data for the center optimization problem.
+
+        Checks dimensions of `coeffs_functional` and `elements` against `num_elements`.
+        Ensures `num_elements` is positive and `id` is non-negative.
+        """
 
         assert_valid_dimensions(
             [self.data.coeffs_functional,

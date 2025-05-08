@@ -6,13 +6,15 @@ from .factories import new_element_solver
 
 def new_center_solver(data: CenterData) -> CenterSolver:
     """
-    Factory function to create a center solver based on the specified type.
+    Create a specific center solver instance based on the center type in data.
 
-    Args:
-        data: The data associated with the center.
+    This factory function inspects the `data.config.type` (CenterType enum)
+    and returns an appropriate subclass of CenterSolver (e.g., CenterLinearFirst,
+    CenterLinearSecond, CenterLinearThird).
 
-    Returns:
-        An instance of the appropriate solver class based on the center type.
+    :param data: The CenterData object containing the configuration, including the center type.
+    :raises ValueError: If the `data.config.type` is unknown or not supported.
+    :return: An instance of a concrete CenterSolver subclass.
     """
 
     if data.config.type == CenterType.STRICT_PRIORITY:

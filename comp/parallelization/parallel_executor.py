@@ -1,20 +1,25 @@
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
-from typing import List, Callable, TypeVar, Optional
+from typing import List, Callable, TypeVar, Optional, Dict
 
 from comp.utils import assert_positive, assert_non_negative
 
 T = TypeVar("T")
 
 
-def run_task_group(tasks: List[Callable[[], T]], num_tasks: int, task_indices: List[int]):
+def run_task_group(tasks: List[Callable[[], T]], num_tasks: int, task_indices: List[int]) -> Dict[int, Optional[T]]:
     """
-    Run a group of tasks in parallel.
+    Execute a specified subgroup of tasks from a larger list of tasks.
 
-    :param tasks: A list of callable tasks to be executed
-    :param num_tasks: The total number of tasks
-    :param task_indices: A list of indices that specify which tasks to run
-    :return: A dictionary mapping task indices to their results
+    This function iterates through a list of task indices, and for each valid index,
+    it executes the corresponding task from the provided list of callable tasks.
+    Results are stored in a dictionary mapping the task index to its result.
+    If a task fails, its result is stored as None and an error message is printed.
+
+    :param tasks: A list of all callable tasks available for execution.
+    :param num_tasks: The total number of tasks in the `tasks` list.
+    :param task_indices: A list of integer indices specifying which tasks from the `tasks` list to execute.
+    :return: A dictionary mapping each executed task's original index to its result (or None if failed).
     """
 
     group_results = dict()
@@ -29,7 +34,16 @@ def run_task_group(tasks: List[Callable[[], T]], num_tasks: int, task_indices: L
 
 
 class ParallelExecutor:
-    def __init__(self, order: List[List[int]], min_threshold: int, num_threads: int):
+    def __init__(self, order: List[List[int]], min_threshold: int, num_threads: int) -> None:
+        """
+        Initialize the ParallelExecutor with scheduling and execution parameters.
+
+        :param order: A list of lists,
+        where each inner list contains task indices defining the execution order for a thread.
+        :param min_threshold: The minimum number of tasks required to enable parallel execution.
+        :param num_threads: The number of worker threads/processes to use for parallel execution.
+        """
+
         self.order = order
         self.min_threshold = min_threshold
         self.num_threads = num_threads
@@ -38,10 +52,16 @@ class ParallelExecutor:
 
     def execute(self, tasks: List[Callable[[], T]]) -> List[Optional[T]]:
         """
-        Execute a list of tasks in parallel using a process pool.
+        Execute a list of tasks, potentially in parallel based on configuration.
 
-        :param tasks: A list of callable tasks to be executed
-        :return: A list of results from the tasks, in the same order as the input tasks
+        If the number of tasks is below `min_threshold` or `num_threads` is 1 or less,
+        tasks are run sequentially.
+        Otherwise, tasks are distributed to a process pool according to the `self.order` schedule.
+        Tasks not covered by the schedule are run sequentially as a fallback.
+
+        :param tasks: A list of callable tasks to be executed.
+        :return: A list containing the results of the tasks, in the same order as the input tasks.
+                  Each result can be of type T or None if the task failed or was not executed.
         """
 
         if (num_tasks := len(tasks)) == 0:
@@ -80,7 +100,13 @@ class ParallelExecutor:
         return results
 
     def validate_input(self) -> None:
-        """Validate the input parameters for the parallel executor."""
+        """
+        Validate the input parameters provided during the executor's initialization.
+
+        Checks if `min_threshold`, `num_threads`, and the length of `order` are positive.
+        It also ensures all task IDs within the `order` schedule are non-negative.
+        Raises an AssertionError if any validation fails.
+        """
 
         assert_positive(self.min_threshold, "min_threshold")
         assert_positive(self.num_threads, "num_threads")
