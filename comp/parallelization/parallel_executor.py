@@ -22,8 +22,9 @@ def run_task_group(tasks: List[Callable[[], T]], num_tasks: int, task_indices: L
         if 0 <= index < num_tasks:
             try:
                 group_results[index] = tasks[index]()
-            except (Exception,):
+            except Exception as e:
                 group_results[index] = None
+                print(f"[PAR] Task {index} failed to execute: {e}")
     return group_results
 
 
@@ -72,8 +73,9 @@ class ParallelExecutor:
                 # For safety, execute tasks not covered by the schedule.
                 try:
                     results[i] = tasks[i]()
-                except (Exception,):
+                except Exception as exception:
                     results[i] = None
+                    print(f"[SEQ] Task {i} failed to execute: {exception}")
 
         return results
 
