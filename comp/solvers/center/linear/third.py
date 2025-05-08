@@ -20,7 +20,8 @@ class CenterLinearThird(CenterSolver):
     def modify_constraints(self, element_index, element_solver) -> None:
         """Add constraints to the element's solver."""
 
-        element_solver.setup(set_objective=False)
+        if not element_solver.setup_done:
+            element_solver.setup(set_objective=False)
 
         element_objective = element_solver.solver.Objective()
 
