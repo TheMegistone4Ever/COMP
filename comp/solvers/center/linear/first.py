@@ -18,7 +18,8 @@ class CenterLinearFirst(CenterSolver):
     def modify_constraints(self, element_index, element_solver):
         """Add constraints to the element's solver."""
 
-        element_solver.setup()
+        if not element_solver.setup_done:
+            element_solver.setup()
 
         # Optimality Equality Constraint: d_e^T * y_e = f_c_opt_e
         element_solver.solver.Add(

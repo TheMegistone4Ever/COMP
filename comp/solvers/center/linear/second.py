@@ -18,7 +18,8 @@ class CenterLinearSecond(CenterSolver):
     def modify_constraints(self, element_index, element_solver):
         """Add constraints to the element's solver."""
 
-        element_solver.setup(set_objective=False)
+        if not element_solver.setup_done:
+            element_solver.setup(set_objective=False)
 
         # Optimality Inequality Constraint: c_e^T * y_e >= f_el_opt_e * (1 - delta_e)
         element_solver.solver.Add(
