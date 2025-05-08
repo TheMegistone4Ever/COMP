@@ -22,7 +22,7 @@ def new_element_solver(data: ElementData) -> ElementSolver:
         raise ValueError(f"Unknown element type for factory: {data.config.type}")
 
 
-def execute_solver_from_data(element_data: ElementData) -> float:
+def execute_new_solver_from_data(element_data: ElementData) -> float:
     """Create solver from data, solve, and return the objective value."""
 
     solver = new_element_solver(element_data)
