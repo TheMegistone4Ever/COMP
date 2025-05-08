@@ -17,15 +17,11 @@ class DataGenerator:
         """Initialize the data generator with system configuration."""
 
         if num_elements is None:
-            num_elements = 30
+            num_elements = 3
         if num_decision_variables is None:
-            num_decision_variables = [6, 4, 5, 3, 2, 4, 5, 6, 7, 8,
-                                      9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                                      19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+            num_decision_variables = [6, 4, 5]
         if num_constraints is None:
-            num_constraints = [4, 2, 3, 1, 2, 3, 4, 5, 6, 7,
-                                8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-                                18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+            num_constraints = [4, 2, 3]
 
         assert_positive(num_elements, "num_elements")
         for i, (ndv, nc) in enumerate(zip(num_decision_variables, num_constraints)):

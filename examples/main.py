@@ -11,7 +11,7 @@ def main() -> None:
     center_data = DataGenerator().generate_center_data()
     center_linear_first = new_center_solver(replace(center_data, config=replace(
         center_data.config, type=CenterType.WEIGHTED_BALANCE)))
-    center_linear_first.setup()
+    center_linear_first.coordinate()
     center_linear_first.print_results()
 
 
