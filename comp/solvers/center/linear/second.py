@@ -2,7 +2,7 @@ from functools import partial
 
 from comp.models import CenterData
 from comp.solvers.core import CenterSolver
-from comp.solvers.factories import new_element_solver, execute_solver_from_data
+from comp.solvers.factories import new_element_solver, execute_new_solver_from_data
 from comp.utils import copy_coeffs, lp_sum
 
 
@@ -14,7 +14,7 @@ class CenterLinearSecond(CenterSolver):
 
         self.element_solvers = [new_element_solver(copy_coeffs(element, data.coeffs_functional[e]))
                                 for e, element in enumerate(data.elements)]
-        self.f_el_opt = self.parallel_executor.execute([partial(execute_solver_from_data, element_data.copy())
+        self.f_el_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, element_data.copy())
                                                         for element_data in data.elements])
 
     def add_constraints(self) -> None:
