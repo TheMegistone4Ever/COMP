@@ -133,4 +133,4 @@ class ElementLinearSecond(ElementSolver):
         :return: The computed `quality functional` as a float.
         """
 
-        return sum(c_e * y_star_e for c_e, y_star_e in zip(self.data.coeffs_functional, self.solve().plan["y_star_e"]))
+        return sum(c * y_star for c, y_star in zip(self.data.coeffs_functional, self.solve().plan.get("y_star_e")))

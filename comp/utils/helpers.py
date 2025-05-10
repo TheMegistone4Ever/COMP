@@ -23,7 +23,8 @@ def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str]
 
 
 def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
-    """Format n-dimensional tensors (nested lists/arrays/tuples, numbers, enums) for readable string output.
+    """
+    Format n-dimensional tensors (nested lists/arrays/tuples, numbers, enums) for readable string output.
 
     This function recursively formats the input, converting numpy arrays to lists,
     applying specified precision to floats, and indenting nested structures.

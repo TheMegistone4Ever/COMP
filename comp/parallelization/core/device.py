@@ -30,7 +30,7 @@ class Device:
         their durations and the end times of preceding operations.
         """
 
-        current_op_start_time = 0.0
+        current_op_start_time = .0
         for operation in self.operations:
             operation.start_time_on_device = current_op_start_time
             current_op_start_time += operation.duration

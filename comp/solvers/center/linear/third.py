@@ -9,7 +9,17 @@ from comp.utils import stringify, tab_out
 
 
 def _calculate_element_own_quality(element_data: ElementData, solution_data: ElementSolution) -> float:
-    return sum(c_e * y_e for c_e, y_e in zip(element_data.coeffs_functional, solution_data.plan["y_star_e"]
+    """
+    Calculate the element's own quality functional value based on its type and solution.
+    For NEGOTIATED elements, the quality is c_e^T * y_star_e.
+    For DECENTRALIZED elements, the quality is c_e^T * y_e.
+
+    :param element_data: The ElementData instance contains configuration and coefficients.
+    :param solution_data: The ElementSolution instance containing the solved plan.
+    :return: The calculated quality functional value as a float.
+    """
+
+    return sum(c * y for c, y in zip(element_data.coeffs_functional, solution_data.plan.get("y_star_e")
     if element_data.config.type == ElementType.NEGOTIATED else solution_data.plan.get("y_e")))
 
 
@@ -20,9 +30,13 @@ class CenterLinearThird(CenterSolver):
         """
         Initialize the CenterLinearThird solver.
 
-        Initializes the base CenterSolver and pre-calculates both f_c_opt (center's
-        perspective optimal for an element) and f_el_opt (element's own optimal)
-        values using parallel execution if configured.
+        This solver implements a weighted balance strategy.
+        It iterates through various weight (w) values for each element, solving the element's problem
+        with a combined goal (center's objective + w * element's objective).
+        It then selects the 'w' for each element that maximizes the element's own objective function.
+
+        Initializes attributes to store solutions for all 'w' values and the chosen solution
+        for each element.
 
         :param data: The CenterData object containing configuration and parameters for the center.
         """
@@ -34,6 +48,21 @@ class CenterLinearThird(CenterSolver):
         self.chosen_element_solutions_info = [(.0, ElementSolution()) for _ in data.elements]
 
     def _modify_element_objective_with_w(self, e: int, element_solver: ElementSolver, w_scalar: float) -> None:
+        """
+        Modify the objective function of an element's solver to incorporate a weight 'w_scalar'.
+
+        The objective becomes: Max (d_e^T * y_e + w_scalar * c_e^T * y_plan_component).
+        - d_e are the center's coefficients for element 'e'.
+        - c_e are the element's own coefficients.
+        - y_e are the element's decision variables relevant to the center's part of the objective.
+        - y_plan_component are the element's decision variables relevant to its own part of the objective
+          (y_e for DECENTRALIZED, y_star_e for NEGOTIATED).
+
+        :param e: The index of the element.
+        :param element_solver: The ElementSolver instance for the specific element.
+        :param w_scalar: The weight coefficient (w_e) to apply.
+        """
+
         if not element_solver.setup_done:
             element_solver.setup(set_objective=False)
 
@@ -66,19 +95,70 @@ class CenterLinearThird(CenterSolver):
         element_objective.SetMaximization()
 
     def modify_constraints(self, e: int, element_solver: ElementSolver) -> None:
+        """
+        Set the element's objective to maximize the center's utility (d_e^T * y_e), effectively using w=0.
+
+        This method fulfills the `CenterSolver` abstract interface requirement.
+        For `CenterLinearThird`'s specific weighted balance strategy, the primary logic for
+        modifying element goals with various weights 'w' is handled within its overridden
+        `coordinate` method, which uses `_solve_element_for_specific_w` and, in turn,
+        `_modify_element_objective_with_w`.
+
+        This `modify_constraints` implementation is generally not invoked during the main
+        coordination flow of `CenterLinearThird` because `CenterLinearThird.coordinate()`
+        does not rely on the base class's `coordinate` method (which would call this).
+        If it were called directly, it would configure the `element_solver` to optimize
+        based solely on the center's coefficients for that element, corresponding to a
+        scenario where the weight for the element's own goal is zero.
+
+        :param e: The index of the element.
+        :param element_solver: The ElementSolver instance for the specific element.
+        """
+
         self._modify_element_objective_with_w(e, element_solver, .0)
 
     def _solve_element_for_specific_w(self, e: int, element_data_copy: ElementData, w_scalar: float) -> ElementSolution:
+        """
+        Create and solve an element's optimization problem for a specific weight 'w_scalar'.
+
+        A new element solver is instantiated, its goal is modified using
+        `_modify_element_objective_with_w`, and then it's solved.
+
+        :param e: The index of the element.
+        :param element_data_copy: A copy of the ElementData for the element.
+                                  A copy is used to avoid side effects if the data is modified.
+        :param w_scalar: The weight coefficient (w_e) to apply.
+        :return: The ElementSolution obtained by solving the element's problem with the given 'w_scalar'.
+        """
+
         element_solver = new_element_solver(element_data_copy)
         self._modify_element_objective_with_w(e, element_solver, w_scalar)
         return element_solver.solve()
 
     def coordinate(self) -> None:
+        """
+        Coordinate the optimization process for all elements using the weighted balance strategy.
+
+        If not already set up, this method performs the following steps:
+        1. For each element and for each weight 'w' specified in `element_data.w`:
+           A. Creates a task to solve the element's subproblem with that 'w'.
+           B. The subproblem's objective is Max (d_e^T * y_e + w * c_e^T * y_plan_component).
+        2. Execute these tasks, potentially in parallel.
+        3. Stores all solutions (for each 'w') in `self.all_element_solutions`.
+        4. For each element:
+           A. Iterates through its solutions obtained for different 'w' values.
+           B. Select the 'w' and corresponding solution that maximizes the element's
+              own quality functional (c_e^T * y_plan_component), calculated by
+              `_calculate_element_own_quality`.
+           C. Stores best selected 'w' and solution in `self.chosen_element_solutions_info`.
+           D. Appends the chosen `ElementSolution` to `self.element_solutions` (used by base class).
+        5. It marks the setup as done.
+        """
+
         if self.setup_done:
             return
 
-        tasks = list()
-        task_identifiers = list()
+        tasks, task_identifiers = list(), list()
 
         for e, element_data in enumerate(self.data.elements):
             if element_data.w is None or len(element_data.w) == 0:
@@ -126,6 +206,25 @@ class CenterLinearThird(CenterSolver):
         self.setup_done = True
 
     def print_results(self) -> None:
+        """
+        Print the comprehensive results of the center's optimization problem for the weighted balance strategy.
+
+        This extends the base `CenterSolver.print_results()` method.
+        For each element, it prints:
+        - A table showing results for all evaluated 'w' values, including:
+            - 'w' value
+            - Element's functional value (c^T * y_plan_component)
+            - Center's contribution to the objective (d^T * y_e)
+            - Combined objective value (d^T * y_e + w * c^T * y_plan_component)
+            - An indicator (*) for the chosen 'w' value.
+        - Detailed information about the solution chosen for that element:
+            - Chosen 'w'
+            - Chosen plan (y_e)
+            - Chosen element functional value
+            - Chosen center contribution
+            - Chosen combined objective value
+        """
+
         super().print_results()
 
         for e_idx, element_data in enumerate(self.data.elements):
@@ -151,7 +250,7 @@ class CenterLinearThird(CenterSolver):
             tab_out(f"Results for Element {element_data.config.id} across w values", results_table_data,
                     ["w", "Elem Func (c^T y)", "Center Contr (d^T y)", "Combined Obj (d^T y + w*c^T y)", "Chosen"])
 
-            if chosen_solution_info and chosen_solution_info.plan and "y_e" in chosen_solution_info.plan:
+            if chosen_solution_info and chosen_solution_info.plan.get("y_e"):
                 print(f"Chosen w: {stringify(chosen_w)}")
                 print(f"Chosen Plan (y_e): {stringify(chosen_solution_info.plan.get("y_e"))}")
                 if chosen_solution_info.objective != float("-inf"):

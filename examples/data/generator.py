@@ -69,7 +69,7 @@ class DataGenerator:
                             to determine its ID and to look up its specific counts of variables/constraints.
         :return: A randomly generated ElementData object.
         """
-        dw = 0.5
+        dw = .5
         return ElementData(
             config=ElementConfig(
                 type=random.choice(list(ElementType)),

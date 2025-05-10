@@ -91,7 +91,7 @@ class CenterSolver(BaseSolver[CenterData]):
                  and the total sum as a float.
         """
 
-        sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], sol.plan.get("y_e")))
+        sums = [sum(d * y for d, y in zip(self.data.coeffs_functional[e], sol.plan.get("y_e")))
                 for e, sol in enumerate(self.element_solutions) if sol is not None]
         return stringify(sums), sum(sums)
 

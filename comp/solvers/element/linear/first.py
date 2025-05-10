@@ -112,4 +112,4 @@ class ElementLinearFirst(ElementSolver):
         :return: The computed `quality functional` as a float.
         """
 
-        return sum(c_e * y_e for c_e, y_e in zip(self.data.coeffs_functional, self.solve().plan.get("y_e")))
+        return sum(c * y for c, y in zip(self.data.coeffs_functional, self.solve().plan.get("y_e")))
