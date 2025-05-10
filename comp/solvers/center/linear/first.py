@@ -1,10 +1,11 @@
+from dataclasses import replace
 from functools import partial
 
-from comp.models import CenterData
+from comp.models import CenterData, ElementType
 from comp.solvers.core import CenterSolver
 from comp.solvers.core.element import ElementSolver
 from comp.solvers.factories import execute_new_solver_from_data
-from comp.utils import copy_coeffs, lp_sum
+from comp.utils import lp_sum
 
 
 class CenterLinearFirst(CenterSolver):
@@ -23,8 +24,9 @@ class CenterLinearFirst(CenterSolver):
 
         super().__init__(data)
 
-        self.f_c_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, copy_coeffs(
-            element, data.coeffs_functional[e])) for e, element in enumerate(data.elements)])
+        self.f_c_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, replace(
+            element_data, coeffs_functional=data.coeffs_functional[e], config=replace(
+                element_data.config, type=ElementType.DECENTRALIZED))) for e, element_data in enumerate(data.elements)])
 
     def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
         """

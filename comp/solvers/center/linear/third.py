@@ -1,10 +1,11 @@
+from dataclasses import replace
 from functools import partial
 from typing import Dict, List, Optional
 
 from comp.models import CenterData, ElementData, ElementSolution, ElementType
 from comp.solvers.core import CenterSolver
 from comp.solvers.core.element import ElementSolver
-from comp.solvers.factories import new_element_solver
+from comp.solvers.factories import new_element_solver, execute_new_solver_from_data
 from comp.utils import stringify, tab_out
 
 
@@ -43,6 +44,11 @@ class CenterLinearThird(CenterSolver):
 
         super().__init__(data)
 
+        self.f_c_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, replace(
+            element_data, coeffs_functional=data.coeffs_functional[e], config=replace(
+                element_data.config, type=ElementType.DECENTRALIZED))) for e, element_data in enumerate(data.elements)])
+        self.f_el_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, element_data.copy())
+                                                        for element_data in data.elements])
         self.element_solutions = list()
         self.all_element_solutions: List[Dict[float, ElementSolution]] = [dict() for _ in data.elements]
         self.chosen_element_solutions_info = [(.0, ElementSolution()) for _ in data.elements]
@@ -231,6 +237,8 @@ class CenterLinearThird(CenterSolver):
             chosen_w, chosen_solution_info = self.chosen_element_solutions_info[e_idx]
 
             print(f"\nElement {stringify(element_data.config.id)} (Type: {element_data.config.type}):")
+            print(f"\nElement Optimal (f_el_opt): {stringify(self.f_el_opt[e_idx])}")
+            print(f"Center Optimal (f_c_opt): {stringify(self.f_c_opt[e_idx])}")
             if not self.all_element_solutions[e_idx]:
                 print("No solutions found for any w value.")
                 continue

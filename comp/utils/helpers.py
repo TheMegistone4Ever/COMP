@@ -1,7 +1,6 @@
-from dataclasses import replace
 from enum import ReprEnum
 from numbers import Number
-from typing import Any, Iterable, List, Optional, Protocol, Sequence, TypeVar, Tuple, Union
+from typing import Any, Iterable, List, Protocol, Sequence, TypeVar, Tuple, Union
 
 from numpy import array, ndarray
 from tabulate import tabulate
@@ -130,24 +129,6 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
         return str(x)
 
     return format_recursive(tensor)
-
-
-def copy_coeffs(element: ElementData, coeffs_functional: Optional[ndarray] = None) -> ElementData:
-    """
-    Create a copy of an ElementData instance, optionally replacing its functional coefficients.
-
-    If `coeffs_functional` is None, the original element data is returned.
-    Otherwise, a new ElementData instance is created with all attributes from the original `element`
-    except for `coeffs_functional`, which is set to the provided new value.
-
-    :param element: The original ElementData instance.
-    :param coeffs_functional: An optional numpy ndarray to replace the
-                              `coeffs_functional` in the new copy.
-    :return: The original `element` if `coeffs_functional` is None, or a new `ElementData`
-             instance with updated coefficients.
-    """
-
-    return element if coeffs_functional is None else replace(element, coeffs_functional=coeffs_functional)
 
 
 class SupportsAdd(Protocol):
