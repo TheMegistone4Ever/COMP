@@ -32,7 +32,7 @@ class ElementSolver(BaseSolver[ElementData]):
         self.solver = pywraplp.Solver.CreateSolver("GLOP")
         self.solved = False
         self.objective_value: Optional[float] = None
-        self.solution: Optional[Dict[str, Any]] = None
+        self.solution: Optional[Dict[str, List[float]]] = None
 
         self.y_e: List[Any] = list()
 
@@ -84,7 +84,7 @@ class ElementSolver(BaseSolver[ElementData]):
                          dictionary of solution variables (Dict[str, List[float]]).
         """
 
-        self.objective_value, self.solution = solution
+        self.objective_value, self.solution = solution.objective, solution.plan
         self.solved = True
 
     @abstractmethod
@@ -178,7 +178,7 @@ class ElementSolver(BaseSolver[ElementData]):
         Concrete subclasses may extend this to print more specific solution details.
         """
 
-        element_objective, dict_solved = self.solve()
+        element_objective, dict_solved = (solution := self.solve()).objective, solution.plan
 
         if element_objective == float("inf"):
             print(f"\nNo optimal solution found for element: {self.data.config.id}.")

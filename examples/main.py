@@ -9,10 +9,10 @@ def main() -> None:
     """Main function to run the solver."""
 
     center_data = DataGenerator().generate_center_data()
-    center_linear_first = new_center_solver(replace(center_data, config=replace(
+    center_linear = new_center_solver(replace(center_data, config=replace(
         center_data.config, type=CenterType.WEIGHTED_BALANCE)))
-    center_linear_first.coordinate()
-    center_linear_first.print_results()
+    center_linear.coordinate()
+    center_linear.print_results()
 
 
 if __name__ == "__main__":

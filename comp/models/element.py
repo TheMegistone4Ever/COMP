@@ -7,7 +7,7 @@ from numpy import ndarray
 from .base import BaseConfig, BaseData
 
 
-@dataclass
+@dataclass(frozen=True)
 class ElementSolution:
     """Solution data for an element in the system."""
 
