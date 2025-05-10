@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Optional, Tuple, Dict, List
 
@@ -6,7 +6,11 @@ from numpy import ndarray
 
 from .base import BaseConfig, BaseData
 
-ElementSolutionType = Tuple[float, Dict[str, List[float]]]
+
+@dataclass
+class ElementSolution:
+    combined_objective: float = float('-inf')
+    plan: Dict[str, List[float]] = field(default_factory=dict)
 
 
 class ElementType(Enum):
@@ -46,7 +50,7 @@ class ElementData(BaseData):
     aggregated_plan_costs: ndarray  # A_e
 
     delta: Optional[float]  # delta_e
-    w: Optional[float]  # w_e
+    w: Optional[ndarray]  # w_e
 
     def copy(self) -> "ElementData":
         """
@@ -67,5 +71,5 @@ class ElementData(BaseData):
             resource_constraints=(b_e.copy(), b_e_1.copy(), b_e_2.copy()),
             aggregated_plan_costs=self.aggregated_plan_costs.copy(),
             delta=self.delta,
-            w=self.w,
+            w=self.w.copy() if self.w is not None else None,
         )

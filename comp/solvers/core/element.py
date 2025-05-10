@@ -168,17 +168,6 @@ class ElementSolver(BaseSolver[ElementData]):
                 self.solution = dict()
         return self.objective_value, self.solution
 
-    def get_objective_value(self) -> float:
-        """
-        Get the objective value of the solved optimization problem for the element.
-
-        Requires `solve()` to have been successfully run.
-
-        :return: The objective value as a float, or None if not solved or no optimal solution.
-        """
-
-        return self.objective_value
-
     def print_results(self) -> None:
         """
         Print the results of the optimization for the element problem.
