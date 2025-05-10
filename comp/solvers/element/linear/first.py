@@ -63,11 +63,11 @@ class ElementLinearFirst(ElementSolver):
 
         objective.SetMaximization()
 
-    def get_solution(self) -> Dict[str, List[float]]:
+    def get_plan(self) -> Dict[str, List[float]]:
         """
-        Extract solution values for the first linear element model.
+        Extract plan values for the first linear element model.
 
-        Retrieves the solution values for the decision variables y_e.
+        Retrieves the plan values for the decision variables y_e.
 
         :return: A dictionary with one key "y_e" mapping to a list of float solution values.
         """

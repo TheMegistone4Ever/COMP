@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from ortools.linear_solver.pywraplp import Variable
 
@@ -21,7 +21,7 @@ class ElementLinearSecond(ElementSolver):
 
         super().__init__(data)
 
-        self.y_star_e: List[Any] = list()
+        self.y_star_e: List[Variable] = list()
 
     def setup_variables(self) -> None:
         """
@@ -82,11 +82,11 @@ class ElementLinearSecond(ElementSolver):
 
         objective.SetMaximization()
 
-    def get_solution(self) -> Dict[str, List[float]]:
+    def get_plan(self) -> Dict[str, List[float]]:
         """
-        Extract solution values for the second linear element model.
+        Extract plan values for the second linear element model.
 
-        Retrieves the solution values for both decision variables y_e and y_star_e.
+        Retrieves the plan values for both decision variables y_e and y_star_e.
 
         :return: A dictionary with keys "y_e" and "y_star_e", each mapping to a list of float solution values.
         """

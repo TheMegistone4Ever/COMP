@@ -1,7 +1,7 @@
 from abc import abstractmethod
-from typing import Any, Dict, Optional, List
+from typing import Dict, Optional, List
 
-from ortools.linear_solver import pywraplp
+from ortools.linear_solver.pywraplp import Solver, Variable
 
 from comp.models import ElementData, ElementSolution
 from comp.utils import (
@@ -29,12 +29,11 @@ class ElementSolver(BaseSolver[ElementData]):
 
         super().__init__(data)
 
-        self.solver = pywraplp.Solver.CreateSolver("GLOP")
+        self.solver = Solver.CreateSolver("GLOP")
         self.solved = False
-        self.objective_value: Optional[float] = None
-        self.solution: Optional[Dict[str, List[float]]] = None
+        self.solution: Optional[ElementSolution] = None
 
-        self.y_e: List[Any] = list()
+        self.y_e: List[Variable] = list()
 
     @abstractmethod
     def setup_constraints(self) -> None:
@@ -59,9 +58,9 @@ class ElementSolver(BaseSolver[ElementData]):
         pass
 
     @abstractmethod
-    def get_solution(self) -> Dict[str, List[float]]:
+    def get_plan(self) -> Dict[str, List[float]]:
         """
-        Abstract method to extract the solution from the OR-Tools solver.
+        Abstract method to extract the plan from the OR-Tools solver.
 
         Concrete implementations should retrieve the values of decision variables
         and format them into a dictionary.
@@ -80,15 +79,14 @@ class ElementSolver(BaseSolver[ElementData]):
         This is used when the solution is obtained externally (e.g., by a center solver)
         and needs to be populated into this element solver instance.
 
-        :param solution: A tuple containing the objective value (float) and a
-                         dictionary of solution variables (Dict[str, List[float]]).
+        :param solution: The solution object containing the objective value and plan variables.
         """
 
-        self.objective_value, self.solution = solution.objective, solution.plan
+        self.solution = solution
         self.solved = True
 
     @abstractmethod
-    def get_plan_component(self, pos: int) -> Any:
+    def get_plan_component(self, pos: int) -> Variable:
         """
         Abstract method to get a specific component of the element's plan variables.
 
@@ -151,7 +149,7 @@ class ElementSolver(BaseSolver[ElementData]):
         Otherwise, it returns infinity and an empty dictionary.
 
         :raises RuntimeError: If `setup()` has not been called first.
-        :return: A tuple containing the objective value (float, or float("inf") if no solution)
+        :return: A tuple containing the objective value (float, or float("-inf") if no solution)
                  and a dictionary of solution variables (Dict[str, List[float]]).
         """
 
@@ -160,13 +158,10 @@ class ElementSolver(BaseSolver[ElementData]):
 
         if not self.solved:
             self.solved = True
-            if self.solver.Solve() == pywraplp.Solver.OPTIMAL:
-                self.objective_value = self.solver.Objective().Value()
-                self.solution = self.get_solution()
-            else:
-                self.objective_value = float("inf")
-                self.solution = dict()
-        return ElementSolution(self.objective_value, self.solution)
+            self.solution = (ElementSolution(self.solver.Objective().Value(), self.get_plan())
+                             if self.solver.Solve() == Solver.OPTIMAL else ElementSolution(float("-inf"), dict()))
+
+        return self.solution
 
     def print_results(self) -> None:
         """
@@ -178,9 +173,7 @@ class ElementSolver(BaseSolver[ElementData]):
         Concrete subclasses may extend this to print more specific solution details.
         """
 
-        element_objective, dict_solved = (solution := self.solve()).objective, solution.plan
-
-        if element_objective == float("inf"):
+        if self.solve().objective == float("-inf"):
             print(f"\nNo optimal solution found for element: {self.data.config.id}.")
             return
 
