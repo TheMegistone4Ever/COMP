@@ -99,7 +99,7 @@ class ElementLinearFirst(ElementSolver):
         super().print_results()
 
         tab_out(f"Optimization results for element {stringify(self.data.config.id)}", (
-            ("Decision Variables", stringify(self.solve()[1]["y_e"])),
+            ("Decision Variables", stringify(self.solve().plan.get("y_e"))),
         ))
 
     def quality_functional(self) -> float:
@@ -112,4 +112,4 @@ class ElementLinearFirst(ElementSolver):
         :return: The computed `quality functional` as a float.
         """
 
-        return sum(c_e * y_e for c_e, y_e in zip(self.data.coeffs_functional, self.solve()[1]["y_e"]))
+        return sum(c_e * y_e for c_e, y_e in zip(self.data.coeffs_functional, self.solve().plan.get("y_e")))
