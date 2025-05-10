@@ -27,7 +27,7 @@ def execute_solution_from_callable(
 
     This function instantiates a new element solver using the provided element data.
     It then applies problem-specific modifications via the `modify_constraints`
-    callable and solves the element's optimization problem.
+    callable and solves the element＇s optimization problem.
 
     :param element_index: The index of the element being solved.
     :param element_data: The ElementData for the specific element.
@@ -42,7 +42,7 @@ def execute_solution_from_callable(
 
 
 class CenterSolver(BaseSolver[CenterData]):
-    """Base class for all center's solvers."""
+    """Base class for all center＇s solvers."""
 
     def __init__(self, data: CenterData) -> None:
         """
@@ -68,10 +68,10 @@ class CenterSolver(BaseSolver[CenterData]):
     @abstractmethod
     def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
         """
-        Abstract method to add center-specific constraints to an element's solver.
+        Abstract method to add center-specific constraints to an element＇s solver.
 
         Concrete center solver implementations must provide this method to tailor
-        the element's optimization problem according to the center's strategy.
+        the element＇s optimization problem according to the center＇s strategy.
 
         :param element_index: The index of the element whose solver is being modified.
         :param element_solver: The ElementSolver instance for the specific element.
@@ -81,10 +81,10 @@ class CenterSolver(BaseSolver[CenterData]):
 
     def quality_functional(self) -> Tuple[str, float]:
         """
-        Calculate the center's overall quality functional.
+        Calculate the center＇s overall quality functional.
 
         This is typically the sum of (d_e^T * y_e) over all elements, where d_e are
-        the center's coefficients for element e, and y_e is element e's plan.
+        the center＇s coefficients for element e, and y_e is element e＇s plan.
         Returns both a string representation of individual sums and the total sum.
 
         :return: A tuple containing a string representation of the sums for each element
@@ -102,7 +102,7 @@ class CenterSolver(BaseSolver[CenterData]):
         If not already set up, this method executes the solution process for each
         element, potentially in parallel.
         It uses the `execute_solution_from_callable` function, passing `self.modify_constraints
-        ` to tailor each element's problem.
+        ` to tailor each element＇s problem.
         The results are stored in `self.element_solutions`.
         """
 
@@ -117,11 +117,11 @@ class CenterSolver(BaseSolver[CenterData]):
 
     def print_results(self) -> None:
         """
-        Print the comprehensive results of the center's optimization problem.
+        Print the comprehensive results of the center＇s optimization problem.
 
         Outputs the input data for the center, its configuration, parallelization order,
         and then calls `print_results` for each element solver.
-        Finally, prints the center's own quality functional.
+        Finally, prints the center＇s own quality functional.
 
         :raises RuntimeError: If `coordinate()` has not been called first.
         """

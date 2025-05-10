@@ -15,7 +15,7 @@ from .base import BaseSolver
 
 
 class ElementSolver(BaseSolver[ElementData]):
-    """Base class for all element's solvers."""
+    """Base class for all element＇s solvers."""
 
     def __init__(self, data: ElementData) -> None:
         """
@@ -74,7 +74,7 @@ class ElementSolver(BaseSolver[ElementData]):
 
     def set_solution(self, solution: ElementSolution) -> None:
         """
-        Set the solution of the element's solver from pre-computed results.
+        Set the solution of the element＇s solver from pre-computed results.
 
         This is used when the solution is obtained externally (e.g., by a center solver)
         and needs to be populated into this element solver instance.
@@ -88,7 +88,7 @@ class ElementSolver(BaseSolver[ElementData]):
     @abstractmethod
     def get_plan_component(self, pos: int) -> Variable:
         """
-        Abstract method to get a specific component of the element's plan variables.
+        Abstract method to get a specific component of the element＇s plan variables.
 
         This is used to access individual decision variables (or expressions involving them)
         by their position/index, typically for constructing constraints or objectives
@@ -104,7 +104,7 @@ class ElementSolver(BaseSolver[ElementData]):
         """
         Set up optimization variables (decision variables) for the element.
 
-        This method creates the primary decision variables (y_e) for the element's
+        This method creates the primary decision variables (y_e) for the element＇s
         problem within the OR-Tools solver.
         Concrete subclasses might extend this to add more variables.
         """
@@ -143,7 +143,7 @@ class ElementSolver(BaseSolver[ElementData]):
         """
         Solve the optimization problem for the element.
 
-        If the problem hasn't been set up, it raises a RuntimeError.
+        If the problem hasn＇t been set up, it raises a RuntimeError.
         If not already solved, it calls the OR-Tools solver.
         If an optimal solution is found, it stores and returns the objective value and solution variables.
         Otherwise, it returns infinity and an empty dictionary.
@@ -169,7 +169,7 @@ class ElementSolver(BaseSolver[ElementData]):
 
         Solves the problem if not already solved.
         If no optimal solution is found, print a message.
-        Otherwise, displays input data and the element's quality functional.
+        Otherwise, displays input data and the element＇s quality functional.
         Concrete subclasses may extend this to print more specific solution details.
         """
 

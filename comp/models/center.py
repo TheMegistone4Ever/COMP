@@ -19,7 +19,7 @@ class CenterType(Enum):
 
     GUARANTEED_CONCESSION:
         The center allows for a controlled concession to the element
-        by ensuring the element's goal (c_l^T * y_l) reaches at least a given proportion
+        by ensuring the element＇s goal (c_l^T * y_l) reaches at least a given proportion
         of its optimal value (e.g., (1 - Δ_l) * f_opt_element).
 
     WEIGHTED_BALANCE:

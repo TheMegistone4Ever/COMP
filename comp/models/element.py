@@ -11,7 +11,7 @@ from .base import BaseConfig, BaseData
 class ElementSolution:
     """Solution data for an element in the system."""
 
-    objective: float = float('-inf')
+    objective: float = float("-inf")
     plan: Dict[str, List[float]] = field(default_factory=dict)
 
 

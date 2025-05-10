@@ -3,13 +3,13 @@ from typing import Generic, TypeVar, Union
 
 from comp.models import BaseData
 
-T = TypeVar("T", bound=BaseData)
+T_base_data = TypeVar("T_base_data", bound=BaseData)
 
 
-class BaseSolver(ABC, Generic[T]):
+class BaseSolver(ABC, Generic[T_base_data]):
     """Base class for all optimization solvers."""
 
-    def __init__(self, data: T) -> None:
+    def __init__(self, data: T_base_data) -> None:
         """
         Initialize the base solver with data and validation.
 
@@ -19,7 +19,7 @@ class BaseSolver(ABC, Generic[T]):
         :param data: The data object (subclass of BaseData) for the solver.
         """
 
-        self.data: T = data
+        self.data: T_base_data = data
         self.setup_done: bool = False
 
         self.validate_input()

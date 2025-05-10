@@ -9,14 +9,14 @@ from comp.utils import lp_sum
 
 
 class CenterLinearFirst(CenterSolver):
-    """Solver for center-level optimization problems. 1'st linear model."""
+    """Solver for center-level optimization problems. 1＇st linear model."""
 
     def __init__(self, data: CenterData) -> None:
         """
         Initialize the CenterLinearFirst solver.
 
         This involves initializing the base CenterSolver and pre-calculating
-        the optimal values (f_c_opt) for each element's functional using
+        the optimal values (f_c_opt) for each element＇s functional using
         parallel execution if configured.
 
         :param data: The CenterData object containing configuration and parameters for the center.
@@ -30,11 +30,11 @@ class CenterLinearFirst(CenterSolver):
 
     def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
         """
-        Add specific constraints to an element's solver for the first linear model.
+        Add specific constraints to an element＇s solver for the first linear model.
 
         This method ensures the element solver is set up, then adds an equality
         constraint: d_e^T * y_e = f_c_opt_e, where f_c_opt_e is the
-        pre-calculated optimal value for the element's functional, according to the center.
+        pre-calculated optimal value for the element＇s functional, according to the center.
 
         :param element_index: The index of the element whose solver is being modified.
         :param element_solver: The ElementSolver instance for the specific element.
