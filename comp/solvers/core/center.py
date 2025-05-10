@@ -2,7 +2,7 @@ from abc import abstractmethod
 from functools import partial
 from typing import Tuple, List, Callable
 
-from comp.models import CenterData, ElementData, ElementSolutionType
+from comp.models import CenterData, ElementData, ElementSolution
 from comp.parallelization import ParallelExecutor, get_order
 from comp.solvers.core.element import ElementSolver
 from comp.solvers.factories import new_element_solver
@@ -21,7 +21,7 @@ def execute_solution_from_callable(
         element_index: int,
         element_data: ElementData,
         modify_constraints: Callable[[int, ElementSolver], None],
-) -> ElementSolutionType:
+) -> ElementSolution:
     """
     Create, configure, and solve an element solver, then return its solution.
 
@@ -56,7 +56,7 @@ class CenterSolver(BaseSolver[CenterData]):
 
         super().__init__(data)
 
-        self.element_solutions: List[ElementSolutionType] = list()
+        self.element_solutions: List[ElementSolution] = list()
         self.element_solvers: List[ElementSolver] = list()
         self.order = get_order(get_lp_problem_sizes(data.elements), data.config.num_threads)
         self.parallel_executor = ParallelExecutor(
@@ -91,7 +91,7 @@ class CenterSolver(BaseSolver[CenterData]):
                  and the total sum as a float.
         """
 
-        sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], sol[1]["y_e"]))
+        sums = [sum(d_e * y_e for d_e, y_e in zip(self.data.coeffs_functional[e], sol.plan.get("y_e")))
                 for e, sol in enumerate(self.element_solutions) if sol is not None]
         return stringify(sums), sum(sums)
 

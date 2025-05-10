@@ -119,7 +119,7 @@ class ElementLinearSecond(ElementSolver):
         super().print_results()
 
         tab_out(f"Optimization results for element {stringify(self.data.config.id)}", (
-            ("Decision Variables", stringify((dict_solved := self.solve()[1])["y_e"])),
+            ("Decision Variables", stringify((dict_solved := self.solve().plan)["y_e"])),
             ("Private Decision Variables", stringify(dict_solved["y_star_e"])),
         ))
 
@@ -133,4 +133,4 @@ class ElementLinearSecond(ElementSolver):
         :return: The computed `quality functional` as a float.
         """
 
-        return sum(c_e * y_star_e for c_e, y_star_e in zip(self.data.coeffs_functional, self.solve()[1]["y_star_e"]))
+        return sum(c_e * y_star_e for c_e, y_star_e in zip(self.data.coeffs_functional, self.solve().plan["y_star_e"]))

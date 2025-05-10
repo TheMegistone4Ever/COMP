@@ -1,6 +1,6 @@
 from .base import BaseConfig, BaseData
 from .center import CenterConfig, CenterData, CenterType
-from .element import ElementConfig, ElementData, ElementType, ElementSolutionType
+from .element import ElementConfig, ElementData, ElementType, ElementSolution
 
 __all__ = [
     "BaseConfig",
@@ -11,5 +11,5 @@ __all__ = [
     "ElementConfig",
     "ElementData",
     "ElementType",
-    "ElementSolutionType",
+    "ElementSolution",
 ]

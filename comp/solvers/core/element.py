@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, List
 
 from ortools.linear_solver import pywraplp
 
-from comp.models import ElementData, ElementSolutionType
+from comp.models import ElementData, ElementSolution
 from comp.utils import (
     assert_non_negative,
     assert_positive,
@@ -73,7 +73,7 @@ class ElementSolver(BaseSolver[ElementData]):
 
         pass
 
-    def set_solution(self, solution: ElementSolutionType) -> None:
+    def set_solution(self, solution: ElementSolution) -> None:
         """
         Set the solution of the element's solver from pre-computed results.
 
@@ -141,7 +141,7 @@ class ElementSolver(BaseSolver[ElementData]):
 
         self.setup_done = True
 
-    def solve(self) -> ElementSolutionType:
+    def solve(self) -> ElementSolution:
         """
         Solve the optimization problem for the element.
 
@@ -166,7 +166,7 @@ class ElementSolver(BaseSolver[ElementData]):
             else:
                 self.objective_value = float("inf")
                 self.solution = dict()
-        return self.objective_value, self.solution
+        return ElementSolution(self.objective_value, self.solution)
 
     def print_results(self) -> None:
         """

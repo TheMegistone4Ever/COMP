@@ -38,4 +38,4 @@ def execute_new_solver_from_data(element_data: ElementData) -> float:
 
     solver = new_element_solver(element_data)
     solver.setup()
-    return solver.solve()[0]
+    return solver.solve().objective

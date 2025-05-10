@@ -9,7 +9,7 @@ from .base import BaseConfig, BaseData
 
 @dataclass
 class ElementSolution:
-    combined_objective: float = float('-inf')
+    objective: float = float('-inf')
     plan: Dict[str, List[float]] = field(default_factory=dict)
 
 
