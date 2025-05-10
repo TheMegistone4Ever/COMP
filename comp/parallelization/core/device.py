@@ -6,6 +6,8 @@ from .operation import Operation
 
 @dataclass
 class Device:
+    """Class representing a device in the system with its operations."""
+
     operations: List[Operation] = field(default_factory=list)
 
     @property
