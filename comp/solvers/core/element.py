@@ -144,7 +144,7 @@ class ElementSolver(BaseSolver[ElementData]):
         """
         Solve the optimization problem for the element.
 
-        If the problem hasn＇t been set up, it raises a RuntimeError.
+        If the problem hasn’t been set up, it raises a RuntimeError.
         If not already solved, it calls the OR-Tools solver.
         If an optimal solution is found, it stores and returns the objective value and solution variables.
         Otherwise, it returns infinity and an empty dictionary.
@@ -248,9 +248,9 @@ class ElementSolver(BaseSolver[ElementData]):
 
     def get_results_dict(self) -> Dict[str, Any]:
         """
-        Get a dictionary representation of the solver's results.
+        Get a dictionary representation of the solver＇s results.
 
-        :return: A dictionary containing the solver's ID, type, status,
+        :return: A dictionary containing the solver＇s ID, type, status,
                     solution objective, plan, and quality functional.
         """
 

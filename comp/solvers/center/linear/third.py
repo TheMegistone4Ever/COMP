@@ -1,6 +1,6 @@
 from dataclasses import replace
 from functools import partial
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from comp.models import CenterData, ElementData, ElementSolution, ElementType
 from comp.solvers.core import CenterSolver
@@ -91,7 +91,7 @@ class CenterLinearThird(CenterSolver):
                     float(coeff_func)
                 )
 
-            # w_e * c_e^T * y_e
+            # w_e * c_e^T * y_star_e
             for i, (coeff_func) in enumerate(element_solver.data.coeffs_functional):
                 element_objective.SetCoefficient(
                     element_solver.get_plan_component(i),
@@ -114,7 +114,7 @@ class CenterLinearThird(CenterSolver):
         coordination flow of `CenterLinearThird` because `CenterLinearThird.coordinate()`
         does not rely on the base class＇s `coordinate` method (which would call this).
         If it were called directly, it would configure the `element_solver` to optimize
-        based solely on the center＇s coefficients for that element, corresponding to a
+        based on the center’s coefficients for that element, corresponding to a
         scenario where the weight for the element＇s own goal is zero.
 
         :param e: The index of the element.
@@ -141,7 +141,7 @@ class CenterLinearThird(CenterSolver):
         self._modify_element_objective_with_w(e, element_solver, w_scalar)
         return element_solver.solve()
 
-    def coordinate(self) -> None:
+    def coordinate(self, tolerance: float = 1e-9) -> None:
         """
         Coordinate the optimization process for all elements using the weighted balance strategy.
 
@@ -197,7 +197,7 @@ class CenterLinearThird(CenterSolver):
 
                 element_qf_e = _calculate_element_own_quality(self.data.elements[e], sol_info_tuple)
 
-                if (element_qf_e - max_element_qf_e) > 1e-9:
+                if (element_qf_e - max_element_qf_e) > tolerance:
                     max_element_qf_e = element_qf_e
                     best_w_for_element = w_val
                     current_best_solution_tuple = sol_info_tuple
@@ -211,7 +211,7 @@ class CenterLinearThird(CenterSolver):
 
         self.setup_done = True
 
-    def print_results(self) -> None:
+    def print_results(self, tolerance: float = 1e-9) -> None:
         """
         Print the comprehensive results of the center＇s optimization problem for the weighted balance strategy.
 
@@ -233,19 +233,19 @@ class CenterLinearThird(CenterSolver):
 
         super().print_results()
 
-        for e_idx, element_data in enumerate(self.data.elements):
-            chosen_w, chosen_solution_info = self.chosen_element_solutions_info[e_idx]
+        for e, element_data in enumerate(self.data.elements):
+            chosen_w, chosen_solution_info = self.chosen_element_solutions_info[e]
 
             print(f"\nElement {stringify(element_data.config.id)} (Type: {element_data.config.type}):")
-            print(f"\nElement Optimal (f_el_opt): {stringify(self.f_el_opt[e_idx])}")
-            print(f"Center Optimal (f_c_opt): {stringify(self.f_c_opt[e_idx])}")
-            if not self.all_element_solutions[e_idx]:
-                print("No solutions found for any w value.")
+            print(f"\nElement Optimal (f_el_opt): {stringify(self.f_el_opt[e])}")
+            print(f"Center Optimal (f_c_opt): {stringify(self.f_c_opt[e])}")
+            if not self.all_element_solutions[e]:
+                print(f"No solutions found for any w value for element {element_data.config.id}.")
                 continue
 
             results_table_data = list()
-            for w_val in sorted(self.all_element_solutions[e_idx].keys()):
-                sol_info = self.all_element_solutions[e_idx][w_val]
+            for w_val in sorted(self.all_element_solutions[e].keys()):
+                sol_info = self.all_element_solutions[e][w_val]
                 elem_func_str, center_contr_str = "N/A", "N/A"
                 obj_str = stringify(combined_obj) if (combined_obj := sol_info.objective) != float("-inf") else "N/A"
                 if sol_info.plan.get("y_e"):
@@ -253,7 +253,7 @@ class CenterLinearThird(CenterSolver):
                     elem_func_str, center_contr_str, obj_str = map(
                         stringify, (elem_func, combined_obj - w_val * elem_func, combined_obj))
                 results_table_data.append([stringify(w_val), elem_func_str, center_contr_str, obj_str,
-                                           "*" if abs(w_val - chosen_w) < 1e-9 else ""])
+                                           "*" if abs(w_val - chosen_w) < tolerance else ""])
 
             tab_out(f"Results for Element {element_data.config.id} across w values", results_table_data,
                     ["w", "Elem QF\n(c^T y)", "Center QF\n(d^T y)", "Combined Obj\n(d^T y + w*c^T y)",
@@ -261,14 +261,68 @@ class CenterLinearThird(CenterSolver):
 
             if chosen_solution_info and chosen_solution_info.plan.get("y_e"):
                 print(f"Chosen w: {stringify(chosen_w)}")
-                print(f"Chosen Plan (y_e): {stringify(chosen_solution_info.plan.get("y_e"))}")
+                print(f"Chosen Plan: {stringify(chosen_solution_info.plan)}")
                 if chosen_solution_info.objective != float("-inf"):
                     chosen_elem_func = _calculate_element_own_quality(element_data, chosen_solution_info)
                     chosen_center_contrib = chosen_solution_info.objective - chosen_w * chosen_elem_func
-                    print(f"Chosen Element Functional (c^T y): {stringify(chosen_elem_func)}")
-                    print(f"Chosen Center Contribution (d^T y): {stringify(chosen_center_contrib)}")
+                    print(f"Chosen Element Functional (c^T y_plan): {stringify(chosen_elem_func)}")
+                    print(f"Chosen Center Contribution (d^T y_e): {stringify(chosen_center_contrib)}")
                     print(f"Chosen Combined Objective: {stringify(chosen_solution_info.objective)}")
                 else:
-                    print(f"The chosen solution is not optimal: {stringify(chosen_solution_info)}")
+                    print(f"The chosen solution for w={stringify(chosen_w)} is not optimal or failed.")
             else:
                 print("No optimal solution found for the chosen w value.")
+
+    def get_results_dict(self, tolerance: float = 1e-9) -> Dict[str, Any]:
+        if not self.setup_done:
+            self.coordinate()
+
+        base_results = super().get_results_dict()
+
+        specific_results = list()
+        for e, element_data in enumerate(self.data.elements):
+            chosen_w, chosen_solution_info = self.chosen_element_solutions_info[e]
+
+            all_w_solutions_payload = dict()
+            if self.all_element_solutions[e]:
+                for w, sol_info in self.all_element_solutions[e].items():
+                    elem_qf, obj_s = float("-inf"), sol_info.objective if sol_info else float("-inf")
+                    if sol_info.plan.get("y_e"):
+                        elem_qf = _calculate_element_own_quality(element_data, sol_info)
+                    all_w_solutions_payload[w] = {
+                        "element_qf": elem_qf,
+                        "center_qf": obj_s - w * elem_qf,
+                        "combined_objective": obj_s,
+                        "is_chosen": abs(w - chosen_w) < tolerance if chosen_w is not None else False,
+                        "solution_plan": sol_info.plan if sol_info else None,
+                    }
+
+            chosen_w_payload = None
+            if chosen_solution_info and chosen_solution_info.plan:
+                chosen_element_qf = _calculate_element_own_quality(element_data, chosen_solution_info)
+                chosen_center_qf = float("-inf")
+                if chosen_solution_info.plan.get("y_e"):
+                    chosen_center_qf = chosen_solution_info.objective - chosen_w * chosen_element_qf
+                chosen_w_payload = {
+                    "chosen_w": chosen_w,
+                    "plan": chosen_solution_info.plan,
+                    "element_qf": chosen_element_qf,
+                    "center_qf": chosen_center_qf,
+                    "combined_objective": chosen_solution_info.objective,
+                }
+
+            specific_results.append({
+                "element_id": element_data.config.id,
+                "element_type": element_data.config.type.name,
+                "f_el_opt": self.f_el_opt[e] if self.f_el_opt else "N/A",
+                "f_c_opt": self.f_c_opt[e] if self.f_c_opt else "N/A",
+                "solutions_by_w": all_w_solutions_payload,
+                "chosen_solution_details": chosen_w_payload,
+            })
+
+        base_results["center_type_specific_results"] = {
+            "strategy": "WEIGHTED_BALANCE",
+            "weighted_balance_analysis": specific_results,
+        }
+
+        return base_results

@@ -88,7 +88,7 @@ class ParallelExecutor:
                 results[i] = all_results_map.get(i)
             else:
                 # This task was not in any scheduled group, run sequentially as a fallback.
-                # This might happen if "get_order" doesn＇t cover all indices.
+                # This might happen if "get_order" doesn’t cover all indices.
                 # Or if the schedule is faulty.
                 # For safety, execute tasks not covered by the schedule.
                 try:

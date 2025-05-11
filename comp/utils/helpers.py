@@ -93,7 +93,7 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
         """
         Recursively format an object into a string with indentation for nested structures.
 
-        Handles numbers, ReprEnums, non-nested lists/tuples, and nested lists/tuples.
+        Handles numbers, ReprEnums, non-nested lists/tuples, dictionaries, and nested structures.
 
         :param x: The object to format.
         :param level: The current nesting level, used for indentation.
@@ -107,6 +107,13 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
         # Base case: handle numbers
         if isinstance(x, Number):
             return format_number(x)
+
+        # Handle dictionaries
+        if isinstance(x, dict):
+            spacer = " " * (level * indent)
+            next_spacer = " " * ((level + 1) * indent)
+            items = [f"{next_spacer}{repr(k)}: {format_recursive(v, level + 1)}" for k, v in x.items()]
+            return "{\n" + ",\n".join(items) + f"\n{spacer}}}"
 
         # Handle non-nested lists
         if isinstance(x, list) and not is_nested(x):
