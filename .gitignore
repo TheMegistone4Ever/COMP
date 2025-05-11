@@ -1,5 +1,5 @@
 # User-defined directories and files
-
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
