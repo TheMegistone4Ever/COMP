@@ -159,6 +159,8 @@ class CenterLinearThird(CenterSolver):
            C. Stores best selected ＇w＇ and solution in `self.chosen_element_solutions_info`.
            D. Appends the chosen `ElementSolution` to `self.element_solutions` (used by base class).
         5. It marks the setup as done.
+
+        :param tolerance: The tolerance for comparing floating-point numbers.
         """
 
         if self.setup_done:
@@ -229,6 +231,8 @@ class CenterLinearThird(CenterSolver):
             - Chosen element functional value
             - Chosen center contribution
             - Chosen combined objective value
+
+        :param tolerance: The tolerance for comparing floating-point numbers.
         """
 
         super().print_results()
@@ -274,6 +278,36 @@ class CenterLinearThird(CenterSolver):
                 print("No optimal solution found for the chosen w value.")
 
     def get_results_dict(self, tolerance: float = 1e-9) -> Dict[str, Any]:
+        """
+        Get the results of the center optimization problem as a dictionary.
+
+        The results are structured as follows:
+        - center_optimal_functional_value: The optimal functional value of the center.
+        - element_optimal_functional_value: The optimal functional value of the elements.
+        - center_type_specific_results: A dictionary containing the strategy used and detailed results for each element.
+        - strategy: The strategy used for the center optimization.
+        - weighted_balance_analysis: A list of dictionaries, each containing:
+            - element_id: The ID of the element.
+            - element_type: The type of the element.
+            - f_el_opt: The optimal functional value of the element.
+            - f_c_opt: The optimal functional value of the center.
+            - solutions_by_w: A dictionary of solutions for each w value, including:
+                - element_qf: The element＇s own quality functional value.
+                - center_qf: The center＇s contribution to the objective.
+                - combined_objective: The combined objective value.
+                - is_chosen: A boolean indicating if this solution was chosen.
+                - solution_plan: The plan associated with this solution.
+            - chosen_solution_details: A dictionary containing details of the chosen solution, including:
+                - chosen_w: The chosen weight (w) value.
+                - plan: The chosen plan.
+                - element_qf: The element＇s own quality functional value for the chosen solution.
+                - center_qf: The center＇s contribution to the objective for the chosen solution.
+                - combined_objective: The combined objective value for the chosen solution.
+
+        :param tolerance: The tolerance for comparing floating-point numbers.
+        :return: A dictionary containing the results of the center optimization problem.
+        """
+
         if not self.setup_done:
             self.coordinate()
 
