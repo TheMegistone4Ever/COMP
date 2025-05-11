@@ -2,7 +2,7 @@ from abc import abstractmethod
 from functools import partial
 from typing import Tuple, List, Callable, Dict, Any
 
-from comp.io.json_io import save_to_json as global_save_json_util
+from comp.io.json_base_serializer import save_to_json as global_save_json_util
 from comp.models import CenterData, ElementData, ElementSolution
 from comp.parallelization import ParallelExecutor, get_order
 from comp.solvers.core.element import ElementSolver

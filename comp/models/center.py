@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from numpy import ndarray
 
-import comp.io.json_io
+from comp.io.json_base_serializer import save_to_json as global_save_json_util
 from .base import BaseConfig, BaseData
 from .element import ElementData
 
@@ -55,4 +55,4 @@ class CenterData(BaseData):
     elements: List[ElementData]
 
     def save_to_json(self, filepath: str) -> None:
-        comp.io.json_io.save_to_json(self, filepath)
+        global_save_json_util(self, filepath)
