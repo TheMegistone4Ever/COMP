@@ -69,7 +69,7 @@ class DataGenerator:
                             to determine its ID and to look up its specific counts of variables/constraints.
         :return: A randomly generated ElementData object.
         """
-        dw = .5
+
         return ElementData(
             config=ElementConfig(
                 type=random.choice(list(ElementType)),
@@ -85,7 +85,7 @@ class DataGenerator:
             ),
             aggregated_plan_costs=random.randint(1, 3, (m_e, n_e)),
             delta=.5,
-            w=array([i * dw for i in range(20)])
+            w=array([i * .5 for i in range(20)])
         )
 
     def generate_center_data(self) -> CenterData:
