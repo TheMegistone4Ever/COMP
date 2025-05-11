@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 
 from ortools.linear_solver.pywraplp import Solver, Variable
 
@@ -30,7 +30,8 @@ class ElementSolver(BaseSolver[ElementData]):
         super().__init__(data)
 
         self.solver = Solver.CreateSolver("GLOP")
-        self.solved = False
+        self.solved: bool = False
+        self.status: int = -1
         self.solution: Optional[ElementSolution] = None
 
         self.y_e: List[Variable] = list()
@@ -83,7 +84,7 @@ class ElementSolver(BaseSolver[ElementData]):
         """
 
         self.solution = solution
-        self.solved = True
+        self.solved = solution is not None
 
     @abstractmethod
     def get_plan_component(self, pos: int) -> Variable:
@@ -158,8 +159,11 @@ class ElementSolver(BaseSolver[ElementData]):
 
         if not self.solved:
             self.solved = True
-            self.solution = (ElementSolution(self.solver.Objective().Value(), self.get_plan())
-                             if self.solver.Solve() == Solver.OPTIMAL else ElementSolution(float("-inf"), dict()))
+            self.status = self.solver.Solve()
+            if self.status in (Solver.OPTIMAL, Solver.FEASIBLE):
+                self.solution = ElementSolution(self.solver.Objective().Value(), self.get_plan())
+            else:
+                self.solution = ElementSolution(float("-inf"), dict())
 
         return self.solution
 
@@ -173,7 +177,7 @@ class ElementSolver(BaseSolver[ElementData]):
         Concrete subclasses may extend this to print more specific solution details.
         """
 
-        if self.solve().objective == float("-inf"):
+        if (solution := self.solve()).objective == float("-inf") and not solution.plan:
             print(f"\nNo optimal solution found for element: {self.data.config.id}.")
             return
 
@@ -218,10 +222,17 @@ class ElementSolver(BaseSolver[ElementData]):
              "resource_constraints[2]",
              "aggregated_plan_costs", ]
         )
-        assert_non_negative(
-            self.data.delta,
-            "data.delta"
-        )
+        if self.data.delta is not None:
+            assert_non_negative(
+                self.data.delta,
+                "data.delta"
+            )
+        if self.data.w is not None:
+            for w in self.data.w:
+                assert_non_negative(
+                    w,
+                    "data.w"
+                )
         assert_non_negative(
             self.data.config.id,
             "data.config.id"
@@ -234,3 +245,20 @@ class ElementSolver(BaseSolver[ElementData]):
             self.data.config.num_constraints,
             "data.config.num_constraints"
         )
+
+    def get_results_dict(self) -> Dict[str, Any]:
+        """
+        Get a dictionary representation of the solver's results.
+
+        :return: A dictionary containing the solver's ID, type, status,
+                    solution objective, plan, and quality functional.
+        """
+
+        return {
+            "id": self.data.config.id,
+            "type": self.data.config.type.name,
+            "status": self.status,
+            "solution_objective": self.solution.objective,
+            "solution_plan": self.solution.plan,
+            "quality_functional": self.quality_functional() if (self.solution and self.solution.plan) else "N/A",
+        }
