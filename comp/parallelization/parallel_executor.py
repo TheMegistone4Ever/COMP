@@ -19,7 +19,7 @@ def run_task_group(tasks: List[Callable[[], T]], num_tasks: int, task_indices: L
     :param tasks: A list of all callable tasks available for execution.
     :param num_tasks: The total number of tasks in the `tasks` list.
     :param task_indices: A list of integer indices specifying which tasks from the `tasks` list to execute.
-    :return: A dictionary mapping each executed task＇s original index to its result (or None if failed).
+    :return: A dictionary mapping each executed task’s original index to its result (or None if failed).
     """
 
     group_results = dict()
@@ -101,7 +101,7 @@ class ParallelExecutor:
 
     def validate_input(self) -> None:
         """
-        Validate the input parameters provided during the executor＇s initialization.
+        Validate the input parameters provided during the executor’s initialization.
 
         Checks if `min_threshold`, `num_threads`, and the length of `order` are positive.
         It also ensures all task IDs within the `order` schedule are non-negative.

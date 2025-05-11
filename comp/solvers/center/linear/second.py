@@ -8,14 +8,14 @@ from comp.utils import lp_sum
 
 
 class CenterLinearSecond(CenterSolver):
-    """Solver for center-level optimization problems. 1＇st linear model."""
+    """Solver for center-level optimization problems. 1’st linear model."""
 
     def __init__(self, data: CenterData) -> None:
         """
         Initialize the CenterLinearSecond solver.
 
         Initializes the base CenterSolver and pre-calculates the optimal values (f_el_opt)
-        for each element＇s own objective function using parallel execution if configured.
+        for each element’s own objective function using parallel execution if configured.
 
         :param data: The CenterData object containing configuration and parameters for the center.
         """
@@ -27,11 +27,11 @@ class CenterLinearSecond(CenterSolver):
 
     def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
         """
-        Add specific constraints and modify the goal for an element＇s solver for the second linear model.
+        Add specific constraints and modify the goal for an element’s solver for the second linear model.
 
         Ensures the element solver is set up (without its default goal).
         Adds an inequality constraint: c_e^T * y_e >= f_el_opt_e * (1 - delta_e).
-        Then, set the element＇s goal to maximize d_e^T * y_e.
+        Then, set the element’s goal to maximize d_e^T * y_e.
 
         :param element_index: The index of the element whose solver is being modified.
         :param element_solver: The ElementSolver instance for the specific element.

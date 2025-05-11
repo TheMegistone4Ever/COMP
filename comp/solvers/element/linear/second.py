@@ -8,7 +8,7 @@ from comp.utils import stringify, tab_out
 
 
 class ElementLinearSecond(ElementSolver):
-    """Solver for element-level optimization problems. 2＇nd linear model."""
+    """Solver for element-level optimization problems. 2’nd linear model."""
 
     def __init__(self, data: ElementData) -> None:
         """
@@ -27,7 +27,7 @@ class ElementLinearSecond(ElementSolver):
         """
         Set up optimization variables for the second linear element model.
 
-        Calls the base class＇s `setup_variables` (for y_e) and then add private decision variables (y_star_e).
+        Calls the base class’s `setup_variables` (for y_e) and then add private decision variables (y_star_e).
         """
 
         super().setup_variables()
@@ -98,7 +98,7 @@ class ElementLinearSecond(ElementSolver):
 
     def get_plan_component(self, pos: int) -> Variable:
         """
-        Get a specific private decision variable (y_star_e[pos]) of the element＇s plan.
+        Get a specific private decision variable (y_star_e[pos]) of the element’s plan.
 
         Used to access an individual private decision variable from the y_star_e vector.
 
@@ -112,7 +112,7 @@ class ElementLinearSecond(ElementSolver):
         """
         Print the detailed results of the optimization for this element model.
 
-        Calls the base class＇s `print_results` and then adds specific output
+        Calls the base class’s `print_results` and then adds specific output
         for both decision variables (y_e) and private decision variables (y_star_e).
         """
 
@@ -125,9 +125,9 @@ class ElementLinearSecond(ElementSolver):
 
     def quality_functional(self) -> float:
         """
-        Calculate the element＇s quality functional for this model (c_e^T * y_star_e).
+        Calculate the element’s quality functional for this model (c_e^T * y_star_e).
 
-        Computes the dot product of the element＇s functional coefficients (c_e)
+        Computes the dot product of the element’s functional coefficients (c_e)
         and its solved private decision variables (y_star_e).
 
         :return: The computed `quality functional` as a float.

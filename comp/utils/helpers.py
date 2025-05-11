@@ -80,7 +80,7 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
         """
         Check if an object is a nested list or tuple.
 
-        A structure is considered nested if it＇s a list or tuple containing
+        A structure is considered nested if it’s a list or tuple containing
         at least one other list, tuple, or numpy array as an element.
 
         :param x: The object to check.

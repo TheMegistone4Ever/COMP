@@ -35,7 +35,7 @@ def make_permutation_1_1(lagged: Device, advanced: Device, average_deadline: flo
     This function tries to improve load balance by moving a longer operation from the
     lagged device to the advanced device.
     A shorter operation from the advanced
-    device to the lagged device, if the swap reduces the lagged device＇s end time
+    device to the lagged device, if the swap reduces the lagged device’s end time
     sufficiently without making it finish before the average deadline by too much.
 
     :param lagged: The Device instance that is currently finishing later (lagging).
@@ -61,7 +61,7 @@ def make_permutation_1_2(lagged: Device, advanced: Device, average_deadline: flo
 
     This function tries to improve load balance by moving one operation from the lagged
     device and replacing it with two operations from the advanced device if this
-    swap reduces the lagged device＇s end time sufficiently.
+    swap reduces the lagged device’s end time sufficiently.
 
     :param lagged: The Device instance that is currently finishing later (lagging).
     :param advanced: The Device instance that is currently finishing earlier (advanced).
@@ -89,7 +89,7 @@ def make_permutation_2_1(lagged: Device, advanced: Device, average_deadline: flo
 
     This function tries to improve load balance by moving two operations from the lagged
     device and replacing them with one operation from the advanced device if this
-    swap reduces the lagged device＇s end time sufficiently.
+    swap reduces the lagged device’s end time sufficiently.
 
     :param lagged: The Device instance that is currently finishing later (lagging).
     :param advanced: The Device instance that is currently finishing earlier (advanced).
@@ -117,7 +117,7 @@ def make_permutation_2_2(lagged: Device, advanced: Device, average_deadline: flo
 
     This function tries to improve load balance by moving two operations from the lagged
     device and replacing them with two operations from the advanced device if this
-    swap reduces the lagged device＇s end time sufficiently.
+    swap reduces the lagged device’s end time sufficiently.
 
     :param lagged: The Device instance that is currently finishing later (lagging).
     :param advanced: The Device instance that is currently finishing earlier (advanced).

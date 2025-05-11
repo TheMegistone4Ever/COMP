@@ -8,7 +8,7 @@ from comp.utils import stringify, tab_out
 
 
 class ElementLinearFirst(ElementSolver):
-    """Solver for element-level optimization problems. 1＇st linear model."""
+    """Solver for element-level optimization problems. 1’st linear model."""
 
     def __init__(self, data: ElementData) -> None:
         """
@@ -78,7 +78,7 @@ class ElementLinearFirst(ElementSolver):
 
     def get_plan_component(self, pos: int) -> Variable:
         """
-        Get a specific decision variable (y_e[pos]) of the element＇s plan.
+        Get a specific decision variable (y_e[pos]) of the element’s plan.
 
         Used to access an individual decision variable from the y_e vector.
 
@@ -92,7 +92,7 @@ class ElementLinearFirst(ElementSolver):
         """
         Print the detailed results of the optimization for this element model.
 
-        Calls the base class＇s `print_results` and then add specific output
+        Calls the base class’s `print_results` and then add specific output
         for the decision variables (y_e).
         """
 
@@ -104,9 +104,9 @@ class ElementLinearFirst(ElementSolver):
 
     def quality_functional(self) -> float:
         """
-        Calculate the element＇s quality functional for this model (c_e^T * y_e).
+        Calculate the element’s quality functional for this model (c_e^T * y_e).
 
-        Computes the dot product of the element＇s functional coefficients (c_e)
+        Computes the dot product of the element’s functional coefficients (c_e)
         and its solved decision variables (y_e).
 
         :return: The computed `quality functional` as a float.
