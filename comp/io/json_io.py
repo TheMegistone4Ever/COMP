@@ -43,7 +43,7 @@ def save_to_json(data: Any, filepath: str) -> None:
     """
     Save data to a JSON file with custom serialization.
 
-    :param data: Data to be saved, can be a dataclass, list, or dictionary.
+    :param data: Data to be saved can be a dataclass, list, or dictionary.
     :param filepath: Path to the JSON file where data will be saved.
     """
 
