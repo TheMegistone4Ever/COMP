@@ -1,90 +1,116 @@
-from dataclasses import is_dataclass, asdict
+from dataclasses import is_dataclass, asdict, fields
 from enum import Enum
 from json import dump, load
-from typing import Any
+from typing import Any, Type, TypeVar
 
-from numpy import ndarray, isinf, isnan, int_, intc, intp, int8, int16, int32, int64, uint8, uint16, uint32, uint64, float16, float32, float64, array
+from numpy import ndarray, floating, isinf, isnan, integer, array
 
-from comp.models import CenterConfig, CenterData, CenterType, ElementConfig, ElementData, ElementType
+from comp.models import CenterConfig, CenterData, ElementConfig, ElementData
+
+T_dataclass = TypeVar("T_dataclass")
 
 
 def _json_serializer(obj: Any) -> Any:
+    """
+    Serialize objects to JSON-friendly formats.
+    This function handles numpy arrays, Enums, dataclasses, and other types
+
+    :param obj: The object to serialize.
+    :return: JSON-friendly representation of the object.
+    :raises TypeError: If the object type is not serializable.
+    """
+
     if isinstance(obj, ndarray):
         return obj.tolist()
     if isinstance(obj, Enum):
         return obj.name
-    if isinstance(obj, float):
-        if isinf(obj) and obj > 0: return "Infinity"
-        if isinf(obj) and obj < 0: return "-Infinity"
-        if isnan(obj): return "NaN"
+    if isinstance(obj, (float, floating)):
+        if isinf(obj):
+            return "Infinity" if obj > 0 else "-Infinity"
+        if isnan(obj):
+            return "NaN"
+        return float(obj)
     if is_dataclass(obj) and not isinstance(obj, type):
         return asdict(obj)
-    if isinstance(obj, (int_, intc, intp, int8,
-                        int16, int32, int64, uint8,
-                        uint16, uint32, uint64)):
+    if isinstance(obj, integer):
         return int(obj)
-    if isinstance(obj, (float16, float32, float64)):
-        if isinf(obj) and obj > 0: return "Infinity"
-        if isinf(obj) and obj < 0: return "-Infinity"
-        if isnan(obj): return "NaN"
-        return float(obj)
-
     if isinstance(obj, (list, dict, str, int, bool)) or obj is None:
         return obj
-
     raise TypeError(f"Type {type(obj)} with value {obj!r} not serializable")
 
 
 def save_to_json(data: Any, filepath: str) -> None:
+    """
+    Save data to a JSON file with custom serialization.
+
+    :param data: Data to be saved, can be a dataclass, list, or dictionary.
+    :param filepath: Path to the JSON file where data will be saved.
+    """
+
     with open(filepath, "w") as f:
         dump(data, f, default=_json_serializer, indent=2)
 
 
-def _parse_element_config(data: dict) -> ElementConfig:
-    return ElementConfig(
-        id=data["id"],
-        type=ElementType[data["type"]],
-        num_decision_variables=data["num_decision_variables"],
-        num_constraints=data["num_constraints"]
-    )
+def _parse_dataclass(cls: Type[T_dataclass], data: dict) -> T_dataclass:
+    """
+    Parse a dictionary into a dataclass instance, handling Enums and nested dataclasses.
+
+    :param cls: The dataclass type to parse into.
+    :param data: Dictionary containing the data to parse.
+    :return: An instance of the dataclass populated with the parsed data.
+    """
+
+    field_types = {f.name: f.type for f in fields(cls)}
+    kwargs = dict()
+    for name, field_type in field_types.items():
+        if name not in data:
+            continue
+        value = data[name]
+        if isinstance(field_type, type) and issubclass(field_type, Enum):
+            kwargs[name] = field_type[value]
+        elif is_dataclass(field_type):
+            kwargs[name] = _parse_dataclass(field_type, value)
+        else:
+            kwargs[name] = value
+    return cls(**kwargs)
 
 
 def _parse_element_data(data: dict) -> ElementData:
-    rc_raw = data["resource_constraints"]
+    """
+    Parse element data from a dictionary, converting lists to numpy arrays.
+
+    :param data: Dictionary containing element data.
+    :return: ElementData object containing the parsed data.
+    """
+
+    def to_array(lst: list | None) -> ndarray | None:
+        return array(lst, dtype=float) if lst is not None else None
+
+    rc_raw = data.get("resource_constraints", list())
     return ElementData(
-        config=_parse_element_config(data["config"]),
-        coeffs_functional=array(data["coeffs_functional"], dtype=float),  # Assuming float for coeffs
-        resource_constraints=(
-            array(rc_raw[0], dtype=float),
-            array(rc_raw[1], dtype=float),
-            array(rc_raw[2], dtype=float)
-        ),
-        aggregated_plan_costs=array(data["aggregated_plan_costs"], dtype=float),
+        config=_parse_dataclass(ElementConfig, data["config"]),
+        coeffs_functional=to_array(data["coeffs_functional"]),
+        resource_constraints=(to_array(rc_raw[0]), to_array(rc_raw[1]), to_array(rc_raw[2]),
+                              ) if rc_raw else (None, None, None),
+        aggregated_plan_costs=to_array(data["aggregated_plan_costs"]),
         delta=data.get("delta"),
-        w=array(data["w"], dtype=float) if data.get("w") is not None else None
-    )
-
-
-def _parse_center_config(data: dict) -> CenterConfig:
-    return CenterConfig(
-        id=data["id"],
-        type=CenterType[data["type"]],
-        min_parallelisation_threshold=data.get("min_parallelisation_threshold"),
-        num_threads=data["num_threads"],
-        num_elements=data["num_elements"]
+        w=to_array(data.get("w")),
     )
 
 
 def load_center_data_from_json(filepath: str) -> CenterData:
+    """
+    Load center data from a JSON file with custom parsing.
+
+    :param filepath: Path to the JSON file.
+    :return: CenterData object containing the loaded data.
+    """
+
     with open(filepath, "r") as f:
         raw_data = load(f)
 
-    center_config = _parse_center_config(raw_data["config"])
-    elements_data = [_parse_element_data(el_data) for el_data in raw_data["elements"]]
-
-    center_data = CenterData(
-        config=center_config,
+    return CenterData(
+        config=_parse_dataclass(CenterConfig, raw_data["config"]),
         coeffs_functional=[array(cf, dtype=float) for cf in raw_data["coeffs_functional"]],
-        elements=elements_data
+        elements=[_parse_element_data(el) for el in raw_data["elements"]],
     )
-    return center_data
