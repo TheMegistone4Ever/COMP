@@ -1,0 +1,196 @@
+from dataclasses import replace
+
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, QSpinBox, QComboBox, QPushButton,
+                             QTextEdit, QProgressBar, QMessageBox, QListWidget, QListWidgetItem, QCheckBox)
+
+from comp.models import CenterType, CenterData
+from comp.utils import stringify
+
+
+class ConfigRunTab(QWidget):
+    run_calculation_requested = pyqtSignal(object)
+    status_updated = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.threads_spinbox = None
+        self.threshold_spinbox = None
+        self.type_combobox = None
+        self.select_all_checkbox = None
+        self.elements_list_widget = None
+        self.data_display_textedit = None
+        self.run_button = None
+        self.progress_bar = None
+        self.center_data = None
+        self.init_ui()
+
+    def init_ui(self):
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
+
+        config_group = QGroupBox("Налаштування Центру")
+        config_layout = QVBoxLayout()
+
+        threads_layout = QHBoxLayout()
+        threads_label = QLabel("Кількість потоків:")
+        self.threads_spinbox = QSpinBox()
+        self.threads_spinbox.setMinimum(1)
+        self.threads_spinbox.setMaximum(128)
+        threads_layout.addWidget(threads_label)
+        threads_layout.addWidget(self.threads_spinbox)
+        threads_layout.addStretch()
+        config_layout.addLayout(threads_layout)
+
+        threshold_layout = QHBoxLayout()
+        threshold_label = QLabel("Мін. поріг паралелізації:")
+        self.threshold_spinbox = QSpinBox()
+        self.threshold_spinbox.setMinimum(1)
+        self.threshold_spinbox.setMaximum(1000)
+        threshold_layout.addWidget(threshold_label)
+        threshold_layout.addWidget(self.threshold_spinbox)
+        threshold_layout.addStretch()
+        config_layout.addLayout(threshold_layout)
+
+        type_layout = QHBoxLayout()
+        type_label = QLabel("Тип центру:")
+        self.type_combobox = QComboBox()
+        for center_type in CenterType:
+            self.type_combobox.addItem(center_type.name, center_type)
+        type_layout.addWidget(type_label)
+        type_layout.addWidget(self.type_combobox)
+        type_layout.addStretch()
+        config_layout.addLayout(type_layout)
+
+        config_group.setLayout(config_layout)
+        main_layout.addWidget(config_group)
+
+        display_group = QGroupBox("Інформація про завантажені дані")
+        display_layout = QVBoxLayout()
+
+        self.select_all_checkbox = QCheckBox("Обрати всі елементи для відображення")
+        self.select_all_checkbox.stateChanged.connect(self.toggle_all_elements_selection)  # type: ignore
+        display_layout.addWidget(self.select_all_checkbox)
+
+        self.elements_list_widget = QListWidget()
+        self.elements_list_widget.itemChanged.connect(self.update_data_display_from_selection)  # type: ignore
+        display_layout.addWidget(self.elements_list_widget)
+
+        self.data_display_textedit = QTextEdit()
+        self.data_display_textedit.setReadOnly(True)
+        display_layout.addWidget(self.data_display_textedit, 1)
+
+        display_group.setLayout(display_layout)
+        main_layout.addWidget(display_group, 1)
+
+        self.run_button = QPushButton("Запустити розрахунок")
+        self.run_button.clicked.connect(self.request_calculation)  # type: ignore
+        self.run_button.setEnabled(False)
+        main_layout.addWidget(self.run_button)
+
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setVisible(False)
+        main_layout.addWidget(self.progress_bar)
+
+    def update_config_display(self, center_data: CenterData):
+        self.center_data = center_data
+        if center_data:
+            self.threads_spinbox.setValue(center_data.config.num_threads or 1)
+            self.threshold_spinbox.setValue(center_data.config.min_parallelisation_threshold or 1)
+
+            index = self.type_combobox.findData(center_data.config.type)
+            if index >= 0:
+                self.type_combobox.setCurrentIndex(index)
+
+            self.elements_list_widget.clear()
+            for i, element in enumerate(center_data.elements):
+                item = QListWidgetItem(f"Елемент {element.config.id} ({element.config.type.name})")
+                item.setData(Qt.UserRole, element)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                item.setCheckState(Qt.Unchecked)
+                self.elements_list_widget.addItem(item)
+
+            self.select_all_checkbox.setCheckState(Qt.Unchecked)
+            self.update_data_display()
+            self.run_button.setEnabled(True)
+            self.status_updated.emit("Налаштування та дані центру готові до розрахунку.")  # type: ignore
+        else:
+            self.data_display_textedit.clear()
+            self.elements_list_widget.clear()
+            self.run_button.setEnabled(False)
+            self.status_updated.emit("Завантажте дані для налаштування та розрахунку.")  # type: ignore
+
+    def toggle_all_elements_selection(self, state):
+        is_checked = (state == Qt.Checked)
+        for i in range(self.elements_list_widget.count()):
+            item = self.elements_list_widget.item(i)
+            item.setCheckState(Qt.Checked if is_checked else Qt.Unchecked)
+
+    def update_data_display_from_selection(self, item_changed):
+        self.update_data_display()
+
+    def update_data_display(self):
+        if not self.center_data:
+            self.data_display_textedit.clear()
+            return
+
+        selected_elements_data = []
+        any_selected = False
+        all_selected_or_none_in_list = True
+
+        if self.elements_list_widget.count() == 0:
+            all_selected_or_none_in_list = True
+        else:
+            for i in range(self.elements_list_widget.count()):
+                item = self.elements_list_widget.item(i)
+                if item.checkState() == Qt.Checked:
+                    selected_elements_data.append(item.data(Qt.UserRole))
+                    any_selected = True
+                else:
+                    all_selected_or_none_in_list = False
+
+        # Update "Select All" checkbox state without triggering its own signal
+        self.select_all_checkbox.blockSignals(True)
+        self.select_all_checkbox.setCheckState(
+            Qt.Checked if all_selected_or_none_in_list and self.elements_list_widget.count() > 0 else Qt.Unchecked)
+        self.select_all_checkbox.blockSignals(False)
+
+        if any_selected:
+            display_text = "Обрані елементи:\n"
+            for el_data in selected_elements_data:
+                display_text += f"Елемент ID: {el_data.config.id}:\n"
+                display_text += stringify(el_data, precision=4) + "\n\n"
+            self.data_display_textedit.setText(display_text)
+        else:
+            self.data_display_textedit.setText(stringify(self.center_data, precision=4))
+
+    def request_calculation(self):
+        if not self.center_data:
+            QMessageBox.warning(self, "Дані не завантажені", "Будь ласка, завантажте дані центру перед запуском.")
+            return
+
+        updated_config = replace(
+            self.center_data.config,
+            num_threads=self.threads_spinbox.value(),
+            min_parallelisation_threshold=self.threshold_spinbox.value(),
+            type=self.type_combobox.currentData()
+        )
+        modified_center_data = replace(self.center_data, config=updated_config)
+
+        self.run_calculation_requested.emit(modified_center_data)  # type: ignore
+        self.run_button.setEnabled(False)
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setValue(0)
+        self.status_updated.emit("Запуск розрахунку...")  # type: ignore
+
+    def calculation_finished(self, success: bool):
+        self.run_button.setEnabled(True)
+        self.progress_bar.setVisible(False)
+        if success:
+            self.status_updated.emit("Розрахунок завершено.")  # type: ignore
+        else:
+            self.status_updated.emit("Розрахунок завершено з помилкою.")  # type: ignore
+
+    def set_progress(self, value):
+        self.progress_bar.setValue(value)
