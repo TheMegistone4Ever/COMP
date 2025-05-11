@@ -37,9 +37,9 @@ class MainWindow(QMainWindow):
         self.config_run_tab = ConfigRunTab()
         self.results_tab = ResultsTab()
 
-        self.tab_widget.addTab(self.data_load_tab, "1. Завантаження даних")
-        self.tab_widget.addTab(self.config_run_tab, "2. Налаштування та Розрахунок")
-        self.tab_widget.addTab(self.results_tab, "3. Перегляд результатів")
+        self.tab_widget.addTab(self.data_load_tab, "Завантаження даних")
+        self.tab_widget.addTab(self.config_run_tab, "Налаштування та Розрахунок")
+        self.tab_widget.addTab(self.results_tab, "Перегляд результатів")
 
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)

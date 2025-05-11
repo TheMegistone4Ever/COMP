@@ -9,16 +9,15 @@ QTabWidget::pane {
 QTabBar::tab {
     background: #E1DFDD;
     color: #323130;
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 8px 15px;
+    font-size: 20px;
     font-weight: 500;
     border: 1px solid #C8C8C8;
     border-bottom: none;
-    min-width: 150px;
 }
 QTabBar::tab:selected {
     background: #F5F5F5;
-    border-bottom: 2px solid #F5F5F5; /* Effectively hides bottom border against pane */
+    border-bottom: 2px solid #F5F5F5;
 }
 QTabBar::tab:hover {
     background: #D0D0D0;
@@ -30,7 +29,7 @@ QPushButton {
     padding: 10px 20px;
     font-weight: 500;
     margin: 4px;
-    font-size: 16px;
+    font-size: 20px;
     min-height: 30px;
 }
 QPushButton:hover {
@@ -53,6 +52,8 @@ QSpinBox, QDoubleSpinBox {
     min-width: 100px;
     font-size: 16px;
     min-height: 28px;
+    selection-background-color: rgba(128, 128, 128, 0.5);
+    selection-color: black;
 }
 QComboBox {
     padding: 6px;
@@ -61,6 +62,8 @@ QComboBox {
     font-size: 16px;
     min-width: 180px;
     min-height: 28px;
+    selection-background-color: rgba(128, 128, 128, 0.5);
+    selection-color: black;
 }
 QComboBox::drop-down {
     border: none;
@@ -69,12 +72,20 @@ QComboBox::drop-down {
 QComboBox::down-arrow {
     image: url(none); 
 }
+QComboBox QAbstractItemView {
+    selection-background-color: rgba(128, 128, 128, 0.5);
+    selection-color: black;
+    background-color: white;
+    border: 1px solid #8A8886;
+}
 QTextEdit {
     padding: 8px;
     border: 1px solid #8A8886;
     background: white;
     font-size: 14px;
     font-family: "Consolas", "Monaco", monospace;
+    selection-background-color: rgba(128, 128, 128, 0.5);
+    selection-color: black;
 }
 QProgressBar {
     border: none;
@@ -108,6 +119,10 @@ QListWidget {
     border: 1px solid #8A8886;
     background: white;
 }
+QListWidget::item:selected {
+    background: rgba(128, 128, 128, 0.5);
+    color: black;
+}
 QGroupBox {
     font-size: 16px;
     font-weight: bold;
@@ -131,5 +146,7 @@ QLineEdit {
     background: white;
     font-size: 16px;
     min-height: 28px;
+    selection-background-color: rgba(128, 128, 128, 0.5);
+    selection-color: black;
 }
 """
