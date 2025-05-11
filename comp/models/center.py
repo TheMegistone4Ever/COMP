@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from numpy import ndarray
 
-from comp.io.json_base_serializer import save_to_json as global_save_json_util
+from comp.utils.json_base_serializer import save_to_json as global_save_json_util
 from .base import BaseConfig, BaseData
 from .element import ElementData
 

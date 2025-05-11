@@ -2,13 +2,12 @@ from abc import abstractmethod
 from functools import partial
 from typing import Tuple, List, Callable, Dict, Any
 
-from comp.io.json_base_serializer import save_to_json as global_save_json_util
 from comp.models import CenterData, ElementData, ElementSolution
 from comp.parallelization import ParallelExecutor, get_order
 from comp.solvers.core.element import ElementSolver
 from comp.solvers.factories import new_element_solver
 from comp.utils import (assert_non_negative, assert_positive, assert_valid_dimensions, get_lp_problem_sizes,
-                        stringify, tab_out)
+                        stringify, tab_out, save_to_json as global_save_json_util)
 from .base import BaseSolver
 
 

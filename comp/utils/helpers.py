@@ -5,7 +5,7 @@ from typing import Any, Iterable, List, Protocol, Sequence, TypeVar, Tuple, Unio
 from numpy import array, ndarray
 from tabulate import tabulate
 
-from comp.models import ElementData
+from comp.models.element import ElementData
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
