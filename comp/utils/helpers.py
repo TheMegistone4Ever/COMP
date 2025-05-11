@@ -100,11 +100,11 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
         :return: The formatted string representation of the object.
         """
 
-        # Handle enums with custom __str__ method
+        # Handle enums
         if isinstance(x, ReprEnum):
             return str(x)
 
-        # Base case: handle numbers
+        # Handle numbers
         if isinstance(x, Number):
             return format_number(x)
 
