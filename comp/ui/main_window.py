@@ -1,4 +1,6 @@
-from PyQt5.QtCore import QThread, pyqtSlot
+from typing import Tuple
+
+from PyQt5.QtCore import QThread, pyqtSlot, QSettings
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QStatusBar
 
 from comp.models import CenterData
@@ -12,6 +14,8 @@ from comp.ui.worker import SolverWorker
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.settings = QSettings("megistone", "COMP-UI")
         self.data_load_tab = None
         self.config_run_tab = None
         self.results_tab = None
@@ -25,12 +29,20 @@ class MainWindow(QMainWindow):
         self.solver_worker = None
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self, resolution: Tuple[int, int] = (1280, 720)):
         self.setWindowTitle("УЗГОДЖЕНЕ ПЛАНУВАННЯ В ДВОРІВНЕВИХ ОРГАНІЗАЦІЙНО-ВИРОБНИЧИХ СИСТЕМАХ")
-        self.setGeometry(100, 100, 1000, 700)
+        self.setMinimumSize(*resolution)
+
+        if geometry := self.settings.value("geometry"):
+            self.restoreGeometry(geometry)
+        else:
+            self.setGeometry(100, 100, *resolution)
+
         self.setStyleSheet(STYLESHEET)
 
         self.tab_widget = QTabWidget(self)
+        self.tab_widget.setDocumentMode(True)
+        self.tab_widget.tabBar().setExpanding(True)
         self.setCentralWidget(self.tab_widget)
 
         self.data_load_tab = DataLoadTab()
@@ -114,15 +126,21 @@ class MainWindow(QMainWindow):
             self.solver_thread = None
         self.solver_worker = None
 
-    def closeEvent(self, event):
+    def closeEvent(self, event, wait_time: int = 5000):
         if self.solver_thread and self.solver_thread.isRunning():
             reply = QMessageBox.question(self, "Вихід", "Розрахунок ще триває. Ви впевнені, що хочете вийти?",
                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if reply == QMessageBox.Yes:
+                if self.solver_worker and hasattr(self.solver_worker, "stop"):
+                    self.solver_worker.stop()
                 self.solver_thread.quit()
-                self.solver_thread.wait()
+                if not self.solver_thread.wait(wait_time):
+                    print("Solver thread did not quit in time, forcing termination.")
+                    self.solver_thread.terminate()
+                    self.solver_thread.wait()
                 event.accept()
             else:
                 event.ignore()
         else:
+            self.settings.setValue("geometry", self.saveGeometry())
             event.accept()

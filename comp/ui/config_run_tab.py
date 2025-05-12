@@ -30,6 +30,23 @@ class ConfigRunTab(QWidget):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(15)
 
+        top_row_layout = QHBoxLayout()
+        top_row_layout.setSpacing(15)
+
+        elements_selection_group = QGroupBox("Вибір елементів для відображення")
+        elements_selection_layout = QVBoxLayout()
+
+        self.select_all_checkbox = QCheckBox("Обрати всі елементи для відображення")
+        self.select_all_checkbox.stateChanged.connect(self.toggle_all_elements_selection)  # type: ignore
+        elements_selection_layout.addWidget(self.select_all_checkbox)
+
+        self.elements_list_widget = QListWidget()
+        self.elements_list_widget.itemChanged.connect(self.update_data_display_from_selection)  # type: ignore
+        elements_selection_layout.addWidget(self.elements_list_widget, 1)
+
+        elements_selection_group.setLayout(elements_selection_layout)
+        top_row_layout.addWidget(elements_selection_group, 1)
+
         config_group = QGroupBox("Налаштування Центру")
         config_layout = QVBoxLayout()
 
@@ -63,26 +80,22 @@ class ConfigRunTab(QWidget):
         type_layout.addStretch()
         config_layout.addLayout(type_layout)
 
+        config_layout.addStretch(1)
+
         config_group.setLayout(config_layout)
-        main_layout.addWidget(config_group)
+        top_row_layout.addWidget(config_group, 1)
 
-        display_group = QGroupBox("Інформація про завантажені дані")
-        display_layout = QVBoxLayout()
+        main_layout.addLayout(top_row_layout, 1)
 
-        self.select_all_checkbox = QCheckBox("Обрати всі елементи для відображення")
-        self.select_all_checkbox.stateChanged.connect(self.toggle_all_elements_selection)  # type: ignore
-        display_layout.addWidget(self.select_all_checkbox)
-
-        self.elements_list_widget = QListWidget()
-        self.elements_list_widget.itemChanged.connect(self.update_data_display_from_selection)  # type: ignore
-        display_layout.addWidget(self.elements_list_widget)
+        data_details_group = QGroupBox("Детальна інформація про обрані елементи")
+        data_details_layout = QVBoxLayout()
 
         self.data_display_textedit = QTextEdit()
         self.data_display_textedit.setReadOnly(True)
-        display_layout.addWidget(self.data_display_textedit, 1)
+        data_details_layout.addWidget(self.data_display_textedit, 1)
 
-        display_group.setLayout(display_layout)
-        main_layout.addWidget(display_group, 1)
+        data_details_group.setLayout(data_details_layout)
+        main_layout.addWidget(data_details_group, 2)
 
         self.run_button = QPushButton("Запустити розрахунок")
         self.run_button.clicked.connect(self.request_calculation)  # type: ignore
@@ -118,6 +131,11 @@ class ConfigRunTab(QWidget):
         else:
             self.data_display_textedit.clear()
             self.elements_list_widget.clear()
+            if self.threads_spinbox:
+                self.threads_spinbox.setValue(1)
+                self.threshold_spinbox.setValue(1)
+                self.type_combobox.setCurrentIndex(0) if self.type_combobox.count() > 0 else None
+                self.select_all_checkbox.setCheckState(Qt.Unchecked)
             self.run_button.setEnabled(False)
             self.status_updated.emit("Завантажте дані для налаштування та розрахунку.")  # type: ignore
 
@@ -128,6 +146,7 @@ class ConfigRunTab(QWidget):
             item.setCheckState(Qt.Checked if is_checked else Qt.Unchecked)
 
     def update_data_display_from_selection(self, item_changed):
+        print(f"Item changed: {item_changed.text()}")
         self.update_data_display()
 
     def update_data_display(self):
