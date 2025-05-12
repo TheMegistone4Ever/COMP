@@ -47,7 +47,7 @@ def assert_valid_dimensions(arrays: List[Any],
 
     for arr, dim, name in zip(arrays, expected_dims, names):
         assert array(arr, dtype="object").shape == dim, (f"Array {name} has invalid dimensions."
-                                                         f" Expected {dim}, got {arr.shape}")
+                                                         f" Expected {dim}, got {array(arr, dtype="object").shape}")
 
 
 def assert_bounds(value: T, bounds: Tuple[T, T], name: str = "") -> None:
