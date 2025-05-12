@@ -1,5 +1,5 @@
-import io
 from contextlib import redirect_stdout
+from io import StringIO
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -36,7 +36,7 @@ class SolverWorker(QObject):
             self.progress.emit(70)  # type: ignore
 
             if not self._is_running: return
-            f = io.StringIO()
+            f = StringIO()
             with redirect_stdout(f):
                 self.solver.print_results()
             results_text = f.getvalue()
