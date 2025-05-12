@@ -133,11 +133,12 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.Yes:
                 if self.solver_worker and hasattr(self.solver_worker, "stop"):
                     self.solver_worker.stop()
-                self.solver_thread.quit()
-                if not self.solver_thread.wait(wait_time):
-                    print("Solver thread did not quit in time, forcing termination.")
-                    self.solver_thread.terminate()
-                    self.solver_thread.wait()
+                if self.solver_thread:
+                    self.solver_thread.quit()
+                    if not self.solver_thread.wait(wait_time):
+                        print("Solver thread did not quit in time, forcing termination.")
+                        self.solver_thread.terminate()
+                        self.solver_thread.wait()
                 event.accept()
             else:
                 event.ignore()
