@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from PyQt5.QtCore import QThread, pyqtSlot, QSettings
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QTabWidget, QMessageBox, QStatusBar
 
 from comp.models import CenterData
@@ -29,8 +30,9 @@ class MainWindow(QMainWindow):
         self.solver_worker = None
         self.init_ui()
 
-    def init_ui(self, resolution: Tuple[int, int] = (1280, 720)):
+    def init_ui(self, resolution: Tuple[int, int] = (1280, 720), icon_path: str = r".\media\COMP.ico"):
         self.setWindowTitle("УЗГОДЖЕНЕ ПЛАНУВАННЯ В ДВОРІВНЕВИХ ОРГАНІЗАЦІЙНО-ВИРОБНИЧИХ СИСТЕМАХ")
+        self.setWindowIcon(QIcon(icon_path))
         self.setMinimumSize(*resolution)
 
         if geometry := self.settings.value("geometry"):
