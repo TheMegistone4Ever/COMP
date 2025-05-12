@@ -87,7 +87,7 @@ class ConfigRunTab(QWidget):
 
         main_layout.addLayout(top_row_layout, 1)
 
-        data_details_group = QGroupBox("Детальна інформація про обрані елементи")
+        data_details_group = QGroupBox("Дворівнева організаційно-виробнича система")
         data_details_layout = QVBoxLayout()
 
         self.data_display_textedit = QTextEdit()
