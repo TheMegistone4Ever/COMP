@@ -109,14 +109,19 @@ The system architecture considered is a two-level hierarchy:
 
 ### 2.2 Coordinated Planning Problem
 
-The fundamental problem is to determine plans $`\pi_l`$ for each element $`l`$ such that the overall system utility $
-`\Phi(\pi)`$ is maximized, while also considering the local interests $`h_l(\pi_l)`$ of each element.
+The fundamental problem is to determine plans $\pi_l$ for each element $l$ such that the overall system
+utility $\Phi(\pi)$ is maximized, while also considering the local interests $h_l(\pi_l)$ of each element.
 This often involves navigating conflicting goals.
-The general formulation seeks to: $`\max_{\pi} \Phi(\pi)`$
-Subject to: $`\forall \pi_l \in Y_l, l = \overline{1,k}`$ (where $Y_l$ is the set of feasible plans for element $l$)
+The general formulation seeks to:
+$$
+\max_{\pi} \Phi(\pi)
+$$
+Subject to: $\forall \pi_l \in Y_l, l = \overline{1,k}$ (where $Y_l$ is the set of feasible plans for element $l$)
 And a compromise condition, which can be expressed, for example, as:
-$`h_l(\pi_l) \ge \max_{y_l \in Y_l} \{h_l(y_l) - \chi_l(\pi_l, y_l)\}`$
-where $`\chi_l`$ is a penalty function for deviating from an element-optimal plan $`y_l`$.
+$$
+h_l(\pi_l) \ge \max_{y_l \in Y_l} \{h_l(y_l) - \chi_l(\pi_l, y_l)\}
+$$
+where $\chi_l$ is a penalty function for deviating from an element-optimal plan $y_l$.
 
 The COMP library focuses on constructive methods to find such compromise plans based on modifying objective functions
 and constraints.
@@ -132,39 +137,49 @@ and [Bachelor M. Ye. Kyselov](https://orcid.org/0009-0005-3686-3419):
 
 The Center first dictates terms based on its own goals.
 
-1. For each element $`e`$, the Center determines the optimal value of its own functional:
-   $`f_{c\_opt\_e} = \max (d_e^T y_e)`$
-   Subject to element $e$'s constraints: $`A^e y_e \le b_e, \quad 0 \le b_{ej}^1 \le y_{ej} \le b_{ej}^2`$.
-2. Then, element $`e`$ optimizes its local objective $`c_e^T y_e`$ under the additional constraint that the Center's
+1. For each element $e$, the Center determines the optimal value of its own functional:
+   $$
+   f_{c\_opt\_e} = \max (d_e^T y_e)
+   $$
+   Subject to element $e$'s constraints: $A^e y_e \le b_e, \quad 0 \le b_{ej}^1 \le y_{ej} \le b_{ej}^2$.
+2. Then, element $e$ optimizes its local objective $c_e^T y_e$ under the additional constraint that the Center's
    goal for it must be met:
-   $`\max (c_e^T y_e)`$
-   Subject to element $e$'s original constraints and $`d_e^T y_e = f_{c\_opt\_e}`$.
+   $$
+   \max (c_e^T y_e)
+   $$
+   Subject to element $e$'s original constraints and $d_e^T y_e = f_{c\_opt\_e}$.
 
 #### 2.3.2 Guaranteed Concession (`CenterLinearSecond`)
 
 The Center ensures that each element achieves at least a certain fraction of its own best possible performance.
 
-1. For each element $`e`$, its individual optimal functional value $`f_{el\_opt\_e}`$ is determined:
-    * For `ElementLinearFirst` type: $`f_{el\_opt\_e} = \max (c_e^T y_e)`$
-    * For `ElementLinearSecond` type (with private variables $`y_e^*`$): $`f_{el\_opt\_e} = \max (c_e^T y_e^*)`$
+1. For each element $e$, its individual optimal functional value $f_{el\_opt\_e}$ is determined:
+    * For `ElementLinearFirst` type: $f_{el\_opt\_e} = \max (c_e^T y_e)$
+    * For `ElementLinearSecond` type (with private variables $y_e^*$): $f_{el\_opt\_e} = \max (c_e^T y_e^*)$
       Subject to its own constraints.
-2. The Center then optimizes its functional $`d_e^T y_e`$ for element $`e`$, subject to element $e$'s original
+2. The Center then optimizes its functional $d_e^T y_e$ for element $e$, subject to element $e$'s original
    constraints and the concession constraint:
-    * For `ElementLinearFirst` type: $`c_e^T y_e \ge f_{el\_opt\_e} \cdot (1 - \delta_e)`$
-    * For `ElementLinearSecond` type: $`c_e^T y_e^* \ge f_{el\_opt\_e} \cdot (1 - \delta_e)`$
-      where $`\delta_e`$ is the concession parameter (0 ≤ $`\delta_e`$ ≤ 1).
+    * For `ElementLinearFirst` type: $c_e^T y_e \ge f_{el\_opt\_e} \cdot (1 - \delta_e)$
+    * For `ElementLinearSecond` type: $c_e^T y_e^* \ge f_{el\_opt\_e} \cdot (1 - \delta_e)$
+      where $\delta_e$ is the concession parameter ($0 \le \delta_e \le 1$).
 
 #### 2.3.3 Weighted Balance (`CenterLinearThird`)
 
 The Center uses a weighted sum to combine its goals with the element's goals.
 
-1. For each element $`e`$ and for each weight $`\omega_e`$ from a predefined set `element_data.w`:
+1. For each element $e$ and for each weight $\omega_e$ from a predefined set `element_data.w`:
    The following combined goal is maximized:
-    * For `ElementLinearFirst` type: $`\max ((d_e^T + \omega_e \cdot c_e^T) y_e)`$
-    * For `ElementLinearSecond` type: $`\max (d_e^T y_e + \omega_e \cdot c_e^T y_e^*)`$
+    * For `ElementLinearFirst` type:
+      $$
+      \max ((d_e^T + \omega_e \cdot c_e^T) y_e)
+      $$
+    * For `ElementLinearSecond` type:
+      $$
+      \max (d_e^T y_e + \omega_e \cdot c_e^T y_e^*)
+      $$
       Subject to element $e$'s original constraints.
-2. After solving for all $`\omega_e`$, the solution (plan and $`\omega_e`$ value) that maximizes the element's own
-   standalone quality functional ($`c_e^T y_e`$ or $`c_e^T y_e^*`$) is chosen for that element.
+2. After solving for all $\omega_e$, the solution (plan and $\omega_e$ value) that maximizes the element's own
+   standalone quality functional ($c_e^T y_e$ or $c_e^T y_e^*$) is chosen for that element.
 
 ### 2.4 Coordination Strategies
 
@@ -173,92 +188,112 @@ the [theoretical framework](https://doi.org/10.20998/2079-0023.2023.02.01) also 
 elements, particularly for scheduling problems.
 The $k$-th element's production model can be aggregated into a single device.
 The set of possible production plans is interpreted as the set of all feasible job
-schedules $`\sigma_k \in \{\text{schedules}\} `$.
-Each job $`j`$ in the schedule $`\sigma_k`$ has a processing time $`l_{kj}`$.
-The $j$-th job is interpreted as the $j$-th series of identical products, and $`l_{kj}`$ uniquely defines the size of
+schedules $\sigma_k \in \{\text{schedules}\}$.
+Each job $j$ in the schedule $\sigma_k$ has a processing time $l_{kj}$.
+The $j$-th job is interpreted as the $j$-th series of identical products, and $l_{kj}$ uniquely defines the size of
 the $j$-th series.
 Each $j$-th series is divided into two subsets.
 The first subset of products belongs to the system as
 a whole, the second to the $k$-th element.
-That is, $`l_{kj} = l_{kj}^S + l_{kj}^E`$, where $
-`l_{kj}^S = \alpha \cdot l_{kj}`$ and $`l_{kj}^E = (1-\alpha) \cdot l_{kj}`$, with $`0 \le \alpha \le 1`$.
-The proportion $`\alpha`$ is set by the center and accounts for the interest of the $k$-th element.
+That is, $l_{kj} = l_{kj}^S + l_{kj}^E$, where $l_{kj}^S = \alpha \cdot l_{kj}$
+and $l_{kj}^E = (1-\alpha) \cdot l_{kj}$, with $0 \le \alpha \le 1$.
+The proportion $\alpha$ is set by the center and accounts for the interest of the $k$-th element.
 Jobs are processed on the device without interruption.
-The order of job execution in any schedule $`\sigma_k`$ is constrained by technological limitations,
+The order of job execution in any schedule $\sigma_k$ is constrained by technological limitations,
 specified by a directed acyclic graph.
-Let $`t=0`$ be the conventional start time of the device.
+Let $t=0$ be the conventional start time of the device.
 
 **Element's Objective (Combinatorial Model):**
 The unconditional criterion for the operational efficiency of the $k$-th element's production is:
-$
-`\max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) C_{kj}(\sigma_k)`$
+
+$$
+\max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) C_{kj}(\sigma_k)
+$$
+
 where:
 
-* $`\sigma_k`$ is a feasible schedule for element $`k`$.
-* $`n_k`$ is the number of jobs for element $`k`$.
-* $`\omega_j^{el}(T_k) > 0`$ are weight coefficients for the $j$-th job of element $`k`$.
-* $`T_k`$ is a target completion time or a parameter influencing weights.
-* $`C_{kj}(\sigma_k)`$ is the completion time of job $`j`$ for an element $`k`$ under schedule $`\sigma_k`$.
+* $\sigma_k$ is a feasible schedule for element $k$.
+* $n_k$ is the number of jobs for an element $k$.
+* $\omega_j^{el}(T_k) > 0$ are weight coefficients for the $j$-th job of element $k$.
+* $T_k$ is a target completion time or a parameter influencing weights.
+* $C_{kj}(\sigma_k)$ is the completion time of job $j$ for an element $k$ under schedule $\sigma_k$.
   This is an NP-hard combinatorial optimization problem,
   and its efficient solution (PSC-algorithm) is presented in [10]
   of the article.
 
 **Center's Objective (for Combinatorial Elements):**
 The criterion for the organizational-production system as a whole, when elements have combinatorial models, is:
-$
-`\sum_{k=1}^{m} \max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{c}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \sum_{k=1}^{m} \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{c}(T_k) C_{kj}(\sigma_k)`$
+
+$$
+\sum_{k=1}^{m} \max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{c}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \sum_{k=1}^{m} \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{c}(T_k) C_{kj}(\sigma_k)
+$$
+
 where:
 
-* $`m`$ is the total number of elements.
-* $`\omega_j^{c}(T_k) > 0`$ are weight coefficients set by the Center for job $`j`$ of element $`k`$.
+* $m$ is the total number of elements.
+* $\omega_j^{c}(T_k) > 0$ are weight coefficients set by the Center for a job $j$ of element $k$.
 
-The problem of finding a compromise solution for this model decomposes into $`m`$ independent subproblems.
+The problem of finding a compromise solution for this model decomposes into $m$ independent subproblems.
 
 **Compromise Criteria (Combinatorial Model - Theoretical):**
 
 1. **First Compromise Criterion (Strict Priority by Center):**
-   The element $`l`$ must choose a schedule $`\sigma_l^*`$ such that:
-   $`\sigma_l^* = \arg \min_{\sigma_l \in \{\sigma_l^c\}} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)`$
-   where $`\{\sigma_l^c\}`$ is the set of schedules that are optimal for the Center's goal for element $`l`$:
-   $`\{\sigma_l^c\} = \left\{ \sigma_l \mid \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}`$
-   and $`f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)`$.
-   Finding $`\sigma_l^*`$ involves first finding $`f_{opt_l}^c`$ using a PSC algorithm, then solving a modified problem
+   The element $l$ must choose a schedule $\sigma_l^*$ such that:
+   $$
+   \sigma_l^* = \arg \min_{\sigma_l \in \{\sigma_l^c\}} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)
+   $$
+   where $\{\sigma_l^c\}$ is the set of schedules that are optimal for the Center's goal for element $l$:
+   $$
+   \{\sigma_l^c\} = \left\{ \sigma_l \mid \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
+   $$
+   and $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
+   Finding $\sigma_l^*$ involves first finding $f_{opt_l}^c$ using a PSC algorithm, then solving a modified problem
    with the functional:
-   $`\min_{\sigma_l} \sum_{j=1}^{n_l} (a \cdot \omega_j^{c}(T_l) + \omega_j^{el}(T_l)) C_{lj}(\sigma_l)`$
-   where $`a > 0`$ is a large enough number.
+   $$
+   \min_{\sigma_l} \sum_{j=1}^{n_l} (a \cdot \omega_j^{c}(T_l) + \omega_j^{el}(T_l)) C_{lj}(\sigma_l)
+   $$
+   where $a > 0$ is a large enough number.
 
 2. **Second Compromise Criterion (Guaranteed Concession for Element):**
-   The Center chooses a schedule for element $`l`$ by solving:
-   $`\sigma_l^{**} = \arg \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)`$
+   The Center chooses a schedule for element $l$ by solving:
+   $$
+   \sigma_l^{**} = \arg \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)
+   $$
    Subject to:
-   $`\sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l) \le f_{opt_l}^{el} + \Delta_l`$
-   where $`f_{opt_l}^{el} = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)`$ (element's best
-   performance), and $`\Delta_l \ge 0`$ is the concession.
-   This criterion can be implemented via a recurrent procedure modifying weighting coefficients $`a_1 \ge 0, a_2 > 0`$
+   $$
+   \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l) \le f_{opt_l}^{el} + \Delta_l
+   $$
+   where $f_{opt_l}^{el} = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)$ (element's best
+   performance), and $\Delta_l \ge 0$ is the concession.
+   This criterion can be implemented via a recurrent procedure modifying weighting coefficients $a_1 \ge 0, a_2 > 0$
    in the combined goal:
-   $`\min_{\sigma_l} \sum_{j=1}^{n_l} [a_1 \omega_j^{el}(T_l) + a_2 \omega_j^{c}(T_l)] C_{lj}(\sigma_l)`$
-   to manage the trade-off between $`\sum \omega_j^{c}C_{lj} - f_{opt_l}^c`$ and $
-   `\sum \omega_j^{el}C_{lj} - f_{opt_l}^{el}`$.
+   $$
+   \min_{\sigma_l} \sum_{j=1}^{n_l} [a_1 \omega_j^{el}(T_l) + a_2 \omega_j^{c}(T_l)] C_{lj}(\sigma_l)
+   $$
+   to manage the trade-off between $\sum \omega_j^{c}C_{lj} - f_{opt_l}^c$
+   and $\sum \omega_j^{el}C_{lj} - f_{opt_l}^{el}$.
 
 ### 2.5 Coordinated Planning with Shared Resources
 
 This section outlines the compromise solution for a two-level system where elements have linear models and share a
 common resource constraint.
-The components of the non-negative vectors $`b_l`$ (resource availability for element $`l`$)
-become variables, subject to the overall constraint $`\sum_{l=1}^m b_l \le \mathbf{B}`$, where $`\mathbf{B}`$ is the
+The components of the non-negative vectors $b_l$ (resource availability for element $l$)
+become variables, subject to the overall constraint $\sum_{l=1}^m b_l \le \mathbf{B}$, where $\mathbf{B}$ is the
 total resource vector available to the Center.
 
 **Compromise Solution:**
-The Center seeks to find plans $`y_l`$ and resource allocations $`b_l`$ for each element $`l = \overline{1,m}`$ by
+The Center seeks to find plans $y_l$ and resource allocations $b_l$ for each element $l = \overline{1,m}$ by
 solving:
-$`(y_1^*, ..., y_m^*, b_1^*, ..., b_m^*) = \arg \max_{y_l, b_l} \sum_{l=1}^m d_l^T y_l`$
+$$
+(y_1^*, ..., y_m^*, b_1^*, ..., b_m^*) = \arg \max_{y_l, b_l} \sum_{l=1}^m d_l^T y_l
+$$
 Subject to:
 
-* Element constraints: $`A^l y_l \le b_l`$ for each element $`l`$.
-* Shared resource constraint: $`\sum_{l=1}^m b_l \le \mathbf{B}`$.
-* Non-negativity and bounds: $`b_l \ge 0`$, $`0 \le b_{lj}^1 \le y_{lj} \le b_{lj}^2`$ (original bounds on decision
+* Element constraints: $A^l y_l \le b_l$ for each element $l$.
+* Shared resource constraint: $\sum_{l=1}^m b_l \le \mathbf{B}$.
+* Non-negativity and bounds: $b_l \ge 0$, $0 \le b_{lj}^1 \le y_{lj} \le b_{lj}^2$ (original bounds on decision
   variables).
-* Performance guarantee for each element: $`c_l^T y_l \ge f_l`$ for each element $`l`$, where $`f_l`$ are target
+* Performance guarantee for each element: $c_l^T y_l \ge f_l$ for each element $l$, where $f_l$ are target
   performance levels set by the Center.
 
 This formulation extends the basic linear models by introducing interdependent resource allocation decided by the Center
@@ -270,9 +305,10 @@ To efficiently parallelize the solving of multiple element subproblems, the COMP
 algorithm (`get_order`).
 The duration of each subproblem (an LP task) is estimated using an empirical formula derived
 from statistical analysis of the standard simplex method's performance:
-$
-`\text{Operations} \approx |0.63 \cdot m^{2.96} \cdot n^{0.02} \cdot (\ln n)^{1.62} + 4.04 \cdot m^{-4.11} \cdot n^{2.92}|`$
-where $`m`$ is the number of constraints and $`n`$ is the number of variables in the LP problem.
+$$
+\text{Operations} \approx |0.63 \cdot m^{2.96} \cdot n^{0.02} \cdot (\ln n)^{1.62} + 4.04 \cdot m^{-4.11} \cdot n^{2.92}|
+$$
+where $m$ is the number of constraints and $n$ is the number of variables in the LP problem.
 The heuristic uses this estimated duration to balance the load across available processing threads.
 
 ## 3. Prerequisites
