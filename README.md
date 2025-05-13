@@ -256,13 +256,17 @@ The problem of finding a compromise solution for this model decomposes into $m$ 
 
 2. **Second Compromise Criterion (Guaranteed Concession for Element):**
    The Center chooses a schedule for element $l$ by solving:
+
    $$
    \sigma_l^{**} = \arg \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)
    $$
+
    Subject to:
+
    $$
    \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l) \le f_{opt_l}^{el} + \Delta_l
    $$
+
    where $f_{opt_l}^{el} = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)$ (element's best
    performance), and $\Delta_l \ge 0$ is the concession.
    This criterion can be implemented via a recurrent procedure modifying weighting coefficients $a_1 \ge 0, a_2 > 0$
