@@ -7,11 +7,21 @@ from comp.io import load_center_data_from_json
 
 
 class DataLoadTab(QWidget):
+    """
+    QWidget tab for loading center data from JSON files.
+
+    Provides a button to open a file dialog. Emits `data_loaded`
+    and `status_updated` signals.
+    """
+
     data_loaded = pyqtSignal(object)
     status_updated = pyqtSignal(str)
 
     def __init__(self, parent=None):
+        """Initializes the DataLoadTab."""
+
         super().__init__(parent)
+
         self.info_label = None
         self.load_button = None
         self.status_label = None
@@ -19,6 +29,8 @@ class DataLoadTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """Initializes UI: info label, load button, status label."""
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
@@ -35,6 +47,12 @@ class DataLoadTab(QWidget):
         layout.addWidget(self.status_label)
 
     def load_data_file(self):
+        """
+        Opens file dialog, loads JSON, and emits `data_loaded`.
+
+        Handles file existence and parsing errors, updating status.
+        """
+
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
         filepath, _ = QFileDialog.getOpenFileName(self, "Завантажити дані центру", "",

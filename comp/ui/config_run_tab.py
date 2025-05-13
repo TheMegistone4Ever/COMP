@@ -9,11 +9,23 @@ from comp.utils import stringify
 
 
 class ConfigRunTab(QWidget):
+    """
+    QWidget tab for configuring and running calculations.
+
+    Displays center settings, lists elements for detail view, and has a
+    "Run Calculation" button.
+    Shows progress via a QProgressBar.
+    Emits `run_calculation_requested` and `status_updated` signals.
+    """
+
     run_calculation_requested = pyqtSignal(object)
     status_updated = pyqtSignal(str)
 
     def __init__(self, parent=None):
+        """Initializes the ConfigRunTab."""
+
         super().__init__(parent)
+
         self.threads_spinbox = None
         self.threshold_spinbox = None
         self.type_combobox = None
@@ -26,6 +38,11 @@ class ConfigRunTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """
+        Initializes UI: element selection, config group, data display,
+        run button, progress bar.
+        """
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(15)
@@ -107,6 +124,12 @@ class ConfigRunTab(QWidget):
         main_layout.addWidget(self.progress_bar)
 
     def update_config_display(self, center_data: CenterData):
+        """
+        Populates UI with data from `center_data` or clears it.
+
+        :param center_data: `CenterData` to display, or None.
+        """
+
         self.center_data = center_data
         if center_data:
             self.threads_spinbox.setValue(center_data.config.num_threads or 1)
@@ -140,16 +163,26 @@ class ConfigRunTab(QWidget):
             self.status_updated.emit("Завантажте дані для налаштування та розрахунку.")  # type: ignore
 
     def toggle_all_elements_selection(self, state):
+        """Handles "Select All" checkbox state change for an element list."""
+
         is_checked = (state == Qt.Checked)
         for i in range(self.elements_list_widget.count()):
             item = self.elements_list_widget.item(i)
             item.setCheckState(Qt.Checked if is_checked else Qt.Unchecked)
 
     def update_data_display_from_selection(self, item_changed):
+        """Updates data display when an element’s check state changes."""
+
         print(f"Item changed: {item_changed.text()}")
         self.update_data_display()
 
     def update_data_display(self):
+        """
+        Updates the data display QTextEdit based on selected elements
+        or shows overall center data if none are selected.
+        Manages "Select All" checkbox state.
+        """
+
         if not self.center_data:
             self.data_display_textedit.clear()
             return
@@ -185,6 +218,11 @@ class ConfigRunTab(QWidget):
             self.data_display_textedit.setText(stringify(self.center_data, precision=4))
 
     def request_calculation(self):
+        """
+        Gathers UI configurations and emits `run_calculation_requested`.
+        Updates UI for running state (button, progress bar).
+        """
+
         if not self.center_data:
             QMessageBox.warning(self, "Дані не завантажені", "Будь ласка, завантажте дані центру перед запуском.")
             return
@@ -204,6 +242,12 @@ class ConfigRunTab(QWidget):
         self.status_updated.emit("Запуск розрахунку...")  # type: ignore
 
     def calculation_finished(self, success: bool):
+        """
+        Updates UI after calculation (button, progress bar, status).
+
+        :param success: True if the calculation was successful.
+        """
+
         self.run_button.setEnabled(True)
         self.progress_bar.setVisible(False)
         if success:
@@ -212,4 +256,6 @@ class ConfigRunTab(QWidget):
             self.status_updated.emit("Розрахунок завершено з помилкою.")  # type: ignore
 
     def set_progress(self, value):
+        """Sets the progress bar value."""
+
         self.progress_bar.setValue(value)

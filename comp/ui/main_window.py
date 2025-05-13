@@ -13,7 +13,16 @@ from comp.ui.worker import SolverWorker
 
 
 class MainWindow(QMainWindow):
+    """
+    The main application window.
+
+    Hosts tabs for different operations (data load, config/run, results).
+    Manages solver worker threads and persists window geometry.
+    """
+
     def __init__(self):
+        """Initializes the MainWindow, setting up UI and QSettings."""
+
         super().__init__()
 
         self.settings = QSettings("megistone", "COMP-UI")
@@ -31,6 +40,16 @@ class MainWindow(QMainWindow):
         self.init_ui()
 
     def init_ui(self, resolution: Tuple[int, int] = (1280, 720), icon_path: str = r".\media\COMP.ico"):
+        """
+        Initializes the main window’s UI components.
+
+        Sets up title, icon, size, stylesheet, tab widget, tabs, and status bar.
+        Connects tab signals.
+
+        :param resolution: Default window size (width, height).
+        :param icon_path: Path to the application icon.
+        """
+
         self.setWindowTitle("УЗГОДЖЕНЕ ПЛАНУВАННЯ В ДВОРІВНЕВИХ ОРГАНІЗАЦІЙНО-ВИРОБНИЧИХ СИСТЕМАХ")
         self.setWindowIcon(QIcon(icon_path))
         self.setMinimumSize(*resolution)
@@ -68,6 +87,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(object)
     def on_data_loaded(self, center_data: CenterData):
+        """
+        Handles new data loaded from DataLoadTab.
+
+        Updates internal data, resets solver/results, and updates UI tabs.
+        Switch to ConfigRunTab if data is valid.
+
+        :param center_data: Loaded `CenterData` or None on failure.
+        """
+
         self.center_data = center_data
         self.solver_instance = None
         self.results_text_data = None
@@ -80,6 +108,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(object)
     def run_calculation(self, modified_center_data: CenterData):
+        """
+        Starts a new calculation using SolverWorker in a QThread.
+
+        Prevents multiple concurrent calculations.
+        Passes `modified_center_data` to the worker.
+
+        :param modified_center_data: `CenterData` with user configurations.
+        """
+
         if self.solver_thread and self.solver_thread.isRunning():
             QMessageBox.information(self, "Розрахунок триває", "Будь ласка, зачекайте завершення поточного розрахунку.")
             return
@@ -102,6 +139,18 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(object, str, dict, str)
     def on_calculation_finished(self, solver_instance, results_text, results_dict, status_message):
+        """
+        Handles successful completion of a calculation from SolverWorker.
+
+        Stores results, updates UI (ConfigRunTab, ResultsTab, status bar),
+        and cleans up the solver thread.
+
+        :param solver_instance: The solver instance.
+        :param results_text: Formatted textual results.
+        :param results_dict: Structured results’ dictionary.
+        :param status_message: Message for the status bar.
+        """
+
         self.solver_instance = solver_instance
         self.results_text_data = results_text
         self.results_dict_data = results_dict
@@ -119,6 +168,15 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def on_calculation_error(self, error_message):
+        """
+        Handles errors reported by the SolverWorker.
+
+        Shows an error message, updates UI (ConfigRunTab, status bar),
+        and cleans up the solver thread.
+
+        :param error_message: Error message from the worker.
+        """
+
         QMessageBox.critical(self, "Помилка розрахунку", error_message)
         self.config_run_tab.calculation_finished(False)
         self.status_bar.showMessage(f"Помилка: {error_message}")
@@ -129,6 +187,17 @@ class MainWindow(QMainWindow):
         self.solver_worker = None
 
     def closeEvent(self, event, wait_time: int = 5000):
+        """
+        Handles the window close event.
+
+        Prompts user if calculation is running.
+        Manage solver thread shutdown.
+        Saves window geometry.
+
+        :param event: The QCloseEvent.
+        :param wait_time: Max time (ms) to wait for thread graceful shutdown.
+        """
+
         if self.solver_thread and self.solver_thread.isRunning():
             reply = QMessageBox.question(self, "Вихід", "Розрахунок ще триває. Ви впевнені, що хочете вийти?",
                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)

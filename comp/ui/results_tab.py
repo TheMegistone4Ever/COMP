@@ -4,10 +4,20 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushB
 
 
 class ResultsTab(QWidget):
+    """
+    QWidget tab for displaying calculation results.
+
+    Features a QTextEdit for textual results, and buttons to copy
+    or save results. Emits `status_updated` signal.
+    """
+
     status_updated = pyqtSignal(str)
 
     def __init__(self, parent=None):
+        """Initializes the ResultsTab."""
+
         super().__init__(parent)
+
         self.results_display = None
         self.copy_button = None
         self.save_button = None
@@ -16,6 +26,8 @@ class ResultsTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
+        """Initializes UI: results display (QTextEdit), copy/save buttons."""
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
@@ -38,6 +50,13 @@ class ResultsTab(QWidget):
         layout.addLayout(buttons_layout)
 
     def display_results(self, results_text: str, solver_instance):
+        """
+        Displays results in the tab.
+
+        :param results_text: Formatted textual results.
+        :param solver_instance: Solver instance for saving detailed results.
+        """
+
         self.results_text = results_text
         self.solver_instance = solver_instance
         self.results_display.setText(results_text)
@@ -49,6 +68,8 @@ class ResultsTab(QWidget):
             self.status_updated.emit("Результати розрахунку відсутні або очищені.")  # type: ignore
 
     def copy_results(self):
+        """Copies displayed result text to the clipboard."""
+
         if self.results_text:
             clipboard = QApplication.clipboard()
             clipboard.setText(self.results_text)
@@ -58,6 +79,8 @@ class ResultsTab(QWidget):
             QMessageBox.warning(self, "Немає даних", "Немає результатів для копіювання.")
 
     def save_results(self):
+        """Saves detailed calculation results (from solver_instance) to JSON."""
+
         if not self.solver_instance:
             QMessageBox.warning(self, "Немає даних", "Немає результатів для збереження.")
             return
@@ -75,6 +98,8 @@ class ResultsTab(QWidget):
                 self.status_updated.emit(f"Помилка збереження результатів: {str(e)}")  # type: ignore
 
     def clear_results(self):
+        """Clears displayed results and resets internal state."""
+
         self.results_text = ""
         self.solver_instance = None
         self.results_display.clear()

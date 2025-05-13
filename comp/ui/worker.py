@@ -8,17 +8,37 @@ from comp.solvers import new_center_solver
 
 
 class SolverWorker(QObject):
+    """
+    QObject worker for background solver calculations.
+
+    Emits `finished`, `error`, and `progress` signals.
+    Supports a `stop()` method for attempted early termination.
+    """
+
     finished = pyqtSignal(object, str, dict, str)
     error = pyqtSignal(str)
     progress = pyqtSignal(int)
 
     def __init__(self, center_data: CenterData):
+        """
+        Initializes the SolverWorker.
+
+        :param center_data: `CenterData` for the solver.
+        """
+
         super().__init__()
+
         self.center_data = center_data
         self.solver = None
         self._is_running = True
 
     def run(self):
+        """
+        Executes the solver process: init, coordinate, get results.
+
+        Checks `_is_running` for early termination. Emits `finished` or `error`.
+        """
+
         try:
             self.progress.emit(10)  # type: ignore
             if not self._is_running: return
@@ -55,4 +75,6 @@ class SolverWorker(QObject):
             self._is_running = False
 
     def stop(self):
+        """Signals the worker to stop by setting `_is_running` to False."""
+
         self._is_running = False
