@@ -1,6 +1,11 @@
 from dataclasses import dataclass, field
 from typing import List
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
 from .operation import Operation
 
 
@@ -11,7 +16,7 @@ class Device:
     operations: List[Operation] = field(default_factory=list)
 
     @property
-    def end(self: "Device") -> float:
+    def end(self: Self) -> float:
         """
         Calculate the end time of the last operation on this device.
 

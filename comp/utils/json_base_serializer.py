@@ -6,7 +6,7 @@ from typing import Any
 from numpy import ndarray, floating, isinf, isnan, integer
 
 
-def _json_serializer(obj: Any) -> Any:
+def json_serializer(obj: Any) -> Any:
     """
     Serialize objects to JSON-friendly formats.
     This function handles numpy arrays, Enums, dataclasses, and other types
@@ -44,4 +44,4 @@ def save_to_json(data: Any, filepath: str) -> None:
     """
 
     with open(filepath, "w") as f:
-        dump(data, f, default=_json_serializer, indent=2)
+        dump(data, f, default=json_serializer, indent=2)

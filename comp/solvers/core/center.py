@@ -148,12 +148,9 @@ class CenterSolver(BaseSolver[CenterData]):
         """
 
         assert_valid_dimensions(
-            [self.data.coeffs_functional,
-             self.data.elements, ],
-            [(self.data.config.num_elements,),
-             (self.data.config.num_elements,), ],
-            ["coeffs_functional",
-             "elements", ]
+            [self.data.elements, ],
+            [(self.data.config.num_elements,), ],
+            ["elements", ]
         )
         assert_positive(
             self.data.config.num_elements,

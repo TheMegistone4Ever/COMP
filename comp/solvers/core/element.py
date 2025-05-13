@@ -206,18 +206,15 @@ class ElementSolver(BaseSolver[ElementData]):
         """
 
         assert_valid_dimensions(
-            [self.data.coeffs_functional,
-             self.data.resource_constraints[0],
+            [self.data.resource_constraints[0],
              self.data.resource_constraints[1],
              self.data.resource_constraints[2],
              self.data.aggregated_plan_costs, ],
-            [(self.data.config.num_decision_variables,),
-             (self.data.config.num_constraints,),
+            [(self.data.config.num_constraints,),
              (self.data.config.num_decision_variables,),
              (self.data.config.num_decision_variables,),
              (self.data.config.num_constraints, self.data.config.num_decision_variables), ],
-            ["coeffs_functional",
-             "resource_constraints[0]",
+            ["resource_constraints[0]",
              "resource_constraints[1]",
              "resource_constraints[2]",
              "aggregated_plan_costs", ]

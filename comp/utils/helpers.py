@@ -2,6 +2,11 @@ from enum import ReprEnum
 from numbers import Number
 from typing import Any, Iterable, List, Protocol, Sequence, TypeVar, Tuple, Union
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
 from numpy import array, ndarray
 from tabulate import tabulate
 
@@ -141,7 +146,7 @@ def stringify(tensor: Any, indent: int = 4, precision: int = 2) -> str:
 class SupportsAdd(Protocol):
     """Protocol for objects that support the addition operator."""
 
-    def __add__(self, other: "SupportsAdd") -> "SupportsAdd": ...
+    def __add__(self, other: Self) -> Self: ...
 
 
 T_lp_sum = TypeVar("T_lp_sum", bound=SupportsAdd)

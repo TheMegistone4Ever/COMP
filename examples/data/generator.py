@@ -3,14 +3,7 @@ from typing import List, Optional
 
 from numpy import random, array
 
-from comp.models import (
-    CenterConfig,
-    CenterData,
-    CenterType,
-    ElementConfig,
-    ElementData,
-    ElementType,
-)
+from comp.models import CenterConfig, CenterData, CenterType, ElementConfig, ElementData, ElementType
 from comp.utils import assert_positive
 
 

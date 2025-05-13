@@ -2,6 +2,11 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Optional, Tuple, Dict, List
 
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
+
 from numpy import ndarray
 
 from .base import BaseConfig, BaseData
@@ -51,10 +56,10 @@ class ElementData(BaseData):
     resource_constraints: Tuple[ndarray, ndarray, ndarray]  # b_e, b_e_1, b_e_2
     aggregated_plan_costs: ndarray  # A_e
 
-    delta: Optional[float]  # delta_e
-    w: Optional[ndarray]  # w_e
+    delta: Optional[float] = None  # delta_e
+    w: Optional[ndarray] = None  # w_e
 
-    def copy(self) -> "ElementData":
+    def copy(self) -> Self:
         """
         Create a deep copy of the ElementData instance.
 
