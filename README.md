@@ -151,7 +151,7 @@ $$
 \max (c_e^T y_e)
 $$
 
-   Subject to element $e$'s original constraints and $d_e^T y_e = f_{c\_opt\_e}$.
+Subject to element $e$'s original constraints and $d_e^T y_e = f_{c\_opt\_e}$.
 
 #### 2.3.2 Guaranteed Concession (`CenterLinearSecond`)
 
@@ -173,11 +173,13 @@ The Center uses a weighted sum to combine its goals with the element's goals.
 
 For each element $e$ and for each weight $\omega_e$ from a predefined set `element_data.w`:
 The following combined goal is maximized:
+
 * For `ElementLinearFirst` type:
 
 $$
 \max ((d_e^T + \omega_e \cdot c_e^T) y_e )
 $$
+
 * For `ElementLinearSecond` type:
 
 $$
@@ -255,7 +257,7 @@ $$
 where $\{\sigma_l^c\}$ is the set of schedules that are optimal for the Center's goal for element $l$:
 
 $$
-\sigma_l^c = \left\lbrace \sigma_l \;\middle|\; \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\rbrace
+\sigma_l^c = \left\lbrace \sigma_l \middle| \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\rbrace
 $$
 
 And $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
