@@ -113,14 +113,18 @@ The fundamental problem is to determine plans $\pi_l$ for each element $l$ such 
 utility $\Phi(\pi)$ is maximized, while also considering the local interests $h_l(\pi_l)$ of each element.
 This often involves navigating conflicting goals.
 The general formulation seeks to:
+
 $$
 \max_{\pi} \Phi(\pi)
 $$
+
 Subject to: $\forall \pi_l \in Y_l, l = \overline{1,k}$ (where $Y_l$ is the set of feasible plans for element $l$)
 And a compromise condition, which can be expressed, for example, as:
+
 $$
 h_l(\pi_l) \ge \max_{y_l \in Y_l} \{h_l(y_l) - \chi_l(\pi_l, y_l)\}
 $$
+
 where $\chi_l$ is a penalty function for deviating from an element-optimal plan $y_l$.
 
 The COMP library focuses on constructive methods to find such compromise plans based on modifying objective functions
@@ -138,15 +142,15 @@ and [Bachelor M. Ye. Kyselov](https://orcid.org/0009-0005-3686-3419):
 The Center first dictates terms based on its own goals.
 
 1. For each element $e$, the Center determines the optimal value of its own functional:
-   $$
-   f_{c\_opt\_e} = \max (d_e^T y_e)
-   $$
-   Subject to element $e$'s constraints: $A^e y_e \le b_e, \quad 0 \le b_{ej}^1 \le y_{ej} \le b_{ej}^2$.
+   $f_{c\_opt\_e} = \max (d_e^T y_e)$
+   Subject to element $e$'s constraints: $A^e y_e \le b_e$, $0 \le b_{ej}^1 \le y_{ej} \le b_{ej}^2$.
 2. Then, element $e$ optimizes its local objective $c_e^T y_e$ under the additional constraint that the Center's
    goal for it must be met:
+
    $$
    \max (c_e^T y_e)
    $$
+
    Subject to element $e$'s original constraints and $d_e^T y_e = f_{c\_opt\_e}$.
 
 #### 2.3.2 Guaranteed Concession (`CenterLinearSecond`)
@@ -284,9 +288,11 @@ total resource vector available to the Center.
 **Compromise Solution:**
 The Center seeks to find plans $y_l$ and resource allocations $b_l$ for each element $l = \overline{1,m}$ by
 solving:
+
 $$
 (y_1^*, ..., y_m^*, b_1^*, ..., b_m^*) = \arg \max_{y_l, b_l} \sum_{l=1}^m d_l^T y_l
 $$
+
 Subject to:
 
 * Element constraints: $A^l y_l \le b_l$ for each element $l$.
@@ -305,10 +311,12 @@ To efficiently parallelize the solving of multiple element subproblems, the COMP
 algorithm (`get_order`).
 The duration of each subproblem (an LP task) is estimated using an empirical formula derived
 from statistical analysis of the standard simplex method's performance:
+
 $$
 \text{Operations} \approx |0.63 \cdot m^{2.96} \cdot n^{0.02} \cdot (\ln n)^{1.62} + 4.04 \cdot m^{-4.11} \cdot n^{2.92}|
 $$
-where $m$ is the number of constraints and $n$ is the number of variables in the LP problem.
+
+Where $m$ is the number of constraints and $n$ is the number of variables in the LP problem.
 The heuristic uses this estimated duration to balance the load across available processing threads.
 
 ## 3. Prerequisites
