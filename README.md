@@ -283,7 +283,7 @@ $$
 \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l) \le f_{opt_l}^{el} + \Delta_l
 $$
 
-where $f_{opt_l}^{el} = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)$ (element's best
+Where $f_{opt_l}^{el} = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)$ (element's best
 performance), and $\Delta_l \ge 0$ is the concession.
 This criterion can be implemented via a recurrent procedure modifying weighting coefficients $a_1 \ge 0, a_2 > 0$
 in the combined goal:
@@ -326,16 +326,77 @@ to maximize its global goal while satisfying individual element performance targ
 ### 2.6 Empirical Complexity for Parallelization
 
 To efficiently parallelize the solving of multiple element subproblems, the COMP library uses a heuristic scheduling
-algorithm (`get_order`).
-The duration of each subproblem (an LP task) is estimated using an empirical formula derived
-from statistical analysis of the standard simplex method's performance:
+algorithm implemented in the `get_order` function.
+This algorithm distributes the LP tasks (element subproblems)
+among available processor threads aiming to minimize the makespan (total time to complete all tasks).
+The effectiveness of such a heuristic depends on accurately estimating the duration of each subproblem.
+
+The duration of each LP task is estimated using an empirical formula derived from statistical analysis of the standard
+simplex method's performance:
 
 $$
-\text{Operations} \approx |0.63 \cdot m^{2.96} \cdot n^{0.02} \cdot (\ln n)^{1.62} + 4.04 \cdot m^{-4.11} \cdot n^{2.92}|
+\text{Task Duration} \approx |0.63 \cdot m^{2.96} \cdot n^{0.02} \cdot (\ln n)^{1.62} + 4.04 \cdot m^{-4.11} \cdot n^{2.92}|
 $$
 
-Where $m$ is the number of constraints and $n$ is the number of variables in the LP problem.
-The heuristic uses this estimated duration to balance the load across available processing threads.
+Where $m$ is the number of constraints and $n$ is the number of variables in the LP problem for a specific element.
+The absolute value ensures a positive duration estimate.
+
+**Derivation of the Empirical Formula:**
+
+This formula was developed through dedicated research to model the computational complexity of the simplex method:
+
+1. **Problem:** The core challenge was to find an analytical expression for the number of arithmetic operations (as a
+   proxy for execution time) based on the LP problem's dimensions ($m$ constraints, $n$ variables).
+2. **Models Explored:** Various models were analyzed, including those based on known theoretical estimates (e.g.,
+   interpretations of Borgwardt's model, smoothed analysis, Adler-Megiddo) and proposed generalized linear and mixed
+   interpretations.
+3. **Best Fit Model:** A mixed generalized model of the form $am^b n^c (\ln n)^d + km^g n^h$ was found to provide the
+   best fit to empirical data.
+4. **Experimental Validation:** The model and its coefficients were validated through extensive simulation experiments.
+   This involved:
+    * Five series of independent simulations using two distinct datasets (one for parameter estimation, one for
+      verification).
+    * Varying $m$ (constraints) and $n$ (variables) over a wide range (e.g., 200 to 2000).
+    * Generating 5 independent LP problems for each $(m, n)$ combination, resulting in a large dataset (e.g., 13,690 LP
+      tasks per series).
+    * Recording the exact number of arithmetic operations for each solved LP task.
+5. **Resulting Coefficients:** The statistical analysis yielded the
+   coefficients $a \approx 0.63, b \approx 2.96, c \approx 0.02,
+   d \approx 1.62, k \approx 4.04, g \approx -4.11, h \approx 2.92$, leading to the formula above.
+
+**The `get_order` Heuristic using Estimated Durations:**
+
+The `get_order` function uses these estimated durations within the `get_multi_device_order_A0` scheduling heuristic
+as follows:
+
+1. **Operation Representation:** Each element's LP subproblem, characterized by its size $(m, n)$, is treated as an
+   `Operation` object.
+   The `empiric(size_tuple)` function calculates its estimated duration using the formula.
+2. **Initial Assignment (LPT - Longest Processing Time):**
+    * The `get_multi_device_heuristic_order` function performs an initial assignment.
+    * All `Operation` objects (LP tasks) are sorted by their estimated durations in descending order.
+    * Each operation, starting with the longest, is assigned to the device (representing a thread) that currently has
+      the minimum accumulated total processing time.
+3. **Iterative Refinement (Load Balancing):**
+    * After the initial LPT assignment, `get_multi_device_order_A0` attempts to further balance the load across devices.
+    * It calculates an `average_deadline` (total estimated work divided by the number of threads).
+    * The heuristic then iteratively identifies the most "lagged" device (whose total workload significantly exceeds the
+      average deadline) and "advanced" devices (whose total workload is significantly below the average).
+    * It attempts to perform task swaps between the most lagged device and the advanced devices using various
+      permutation strategies:
+        * `make_permutation_1_1`: Swap one task from lagged with one from advanced.
+        * `make_permutation_1_2`: Swap one task from lagged with two from advanced.
+        * `make_permutation_2_1`: Swap two tasks from lagged with one from advanced.
+        * `make_permutation_2_2`: Swap two tasks from lagged with two from advanced.
+    * A swap is made if it reduces the lagged device's end time sufficiently without causing it to finish too early
+      relative to the average deadline.
+    * This iterative refinement continues until the end times of all devices are balanced within a specified tolerance,
+      or no further beneficial permutations can be found.
+4. **Output Schedule:** The `get_order` function returns a list of lists, where each inner list contains the original
+   indices of the tasks assigned to a specific thread.
+
+`ParallelExecutor` uses this generated schedule to distribute the actual execution of the element subproblems across the
+available processor cores.
 
 ## 3. Prerequisites
 
@@ -630,7 +691,7 @@ COMP/
 
 The plots below visualize data related to the empirical complexity analysis of the simplex method, which informs the
 parallelization heuristically used in COMP.
-`W1` and `W2` likely refer to different datasets or model variations used during the empirical study.
+`W1` and `W2` refer to different datasets used during the empirical study.
 
 *3D Plot - General Mixed Model (Linear Scale) - W1:*
 
