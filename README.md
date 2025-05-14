@@ -176,13 +176,13 @@ The Center uses a weighted sum to combine its goals with the element's goals.
     * For `ElementLinearFirst` type:
 
       $$
-      \max ((d_e^T + \omega_e \cdot c_e^T) y_e)
+      \max{} ((d_e^T + \omega_e \cdot c_e^T) y_e )
       $$
 
     * For `ElementLinearSecond` type:
 
       $$
-      \max (d_e^T y_e + \omega_e \cdot c_e^T y_e^* )
+      \max{} (d_e^T y_e + \omega_e \cdot c_e^T y_e^* )
       $$
 
       Subject to element $e$'s original constraints.
