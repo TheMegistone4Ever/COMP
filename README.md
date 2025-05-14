@@ -159,7 +159,7 @@ The Center ensures that each element achieves at least a certain fraction of its
 
 1. For each element $e$, its individual optimal functional value $f_{el\_opt\_e}$ is determined:
     * For `ElementLinearFirst` type: $f_{el\_opt\_e} = \max (c_e^T y_e)$
-    * For `ElementLinearSecond` type (with private variables $y_e^*$): $f_{el\_opt\_e} = \max (c_e^T y_e^*)$
+    * For `ElementLinearSecond` type (with private variables $y_e^* $): $f_{el\_opt\_e} = \max (c_e^T y_e^* )$
       Subject to its own constraints.
 2. The Center then optimizes its functional $d_e^T y_e$ for element $e$, subject to element $e$'s original
    constraints and the concession constraint:
