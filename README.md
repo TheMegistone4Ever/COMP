@@ -148,7 +148,7 @@ The Center first dictates terms based on its own goals.
    goal for it must be met:
 
    $$
-   \max (c_e^T y_e)
+   \max_{} (c_e^T y_e)
    $$
 
    Subject to element $e$'s original constraints and $d_e^T y_e = f_{c\_opt\_e}$.
@@ -176,13 +176,13 @@ The Center uses a weighted sum to combine its goals with the element's goals.
     * For `ElementLinearFirst` type:
 
       $$
-      \max{y} ((d_e^T + \omega_e \cdot c_e^T) y_e )
+      \max_{} ((d_e^T + \omega_e \cdot c_e^T) y_e )
       $$
 
     * For `ElementLinearSecond` type:
 
       $$
-      \max{y} (d_e^T y_e + \omega_e \cdot c_e^T y_e^* )
+      \max_{} (d_e^T y_e + \omega_e \cdot c_e^T y_e^* )
       $$
 
       Subject to element $e$'s original constraints.
