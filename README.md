@@ -471,8 +471,6 @@ The `examples/` directory contains scripts to demonstrate core functionalities.
   *Console Output Example (partial):*
 
   <img src="images/ui_tab_results.png" alt="Console output from main.py showing partial results table" width="600"/>
-  *(Note: The image `ui_tab_results.png` shows GUI results, but `main.py` outputs to console;
-  the structure of text output from `print_results()` is similar to what is shown in the GUI's text area.)*
 
 ### 5.2 Graphical User Interface (GUI)
 
