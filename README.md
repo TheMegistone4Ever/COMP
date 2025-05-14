@@ -255,7 +255,7 @@ $$
 where $\{\sigma_l^c\}$ is the set of schedules that are optimal for the Center's goal for element $l$:
 
 $$
-\sigma_l^c = \left\{ \sigma_l \middle| \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
+\sigma_l^c = \left\{ \sigma_l \;\middle|\; \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
 $$
 
 And $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
