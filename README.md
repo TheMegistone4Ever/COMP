@@ -255,10 +255,10 @@ $$
 where $\{\sigma_l^c\}$ is the set of schedules that are optimal for the Center's goal for element $l$:
 
 $$
-\{\sigma_l^c\} = \left\{ \sigma_l \,\middle|\, \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
+\sigma_l^c = \left\{ \sigma_l \,\middle|\, \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
 $$
 
-and $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
+And $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
 Finding $\sigma_l^*$ involves first finding $f_{opt_l}^c$ using a PSC algorithm, then solving a modified problem
 with the functional:
 
