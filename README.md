@@ -113,18 +113,14 @@ The fundamental problem is to determine plans $\pi_l$ for each element $l$ such 
 utility $\Phi(\pi)$ is maximized, while also considering the local interests $h_l(\pi_l)$ of each element.
 This often involves navigating conflicting goals.
 The general formulation seeks to:
-
 $$
 \max_{\pi} \Phi(\pi)
 $$
-
 Subject to: $\forall \pi_l \in Y_l, l = \overline{1,k}$ (where $Y_l$ is the set of feasible plans for element $l$)
 And a compromise condition, which can be expressed, for example, as:
-
 $$
 h_l(\pi_l) \ge \max_{y_l \in Y_l} \{h_l(y_l) - \chi_l(\pi_l, y_l)\}
 $$
-
 where $\chi_l$ is a penalty function for deviating from an element-optimal plan $y_l$.
 
 The COMP library focuses on constructive methods to find such compromise plans based on modifying objective functions
@@ -146,11 +142,9 @@ The Center first dictates terms based on its own goals.
    Subject to element $e$'s constraints: $A^e y_e \le b_e$, $0 \le b_{ej}^1 \le y_{ej} \le b_{ej}^2$.
 2. Then, element $e$ optimizes its local objective $c_e^T y_e$ under the additional constraint that the Center's
    goal for it must be met:
-
 $$
 \max (c_e^T y_e)
 $$
-
    Subject to element $e$'s original constraints and $d_e^T y_e = f_{c\_opt\_e}$.
 
 #### 2.3.2 Guaranteed Concession (`CenterLinearSecond`)
@@ -174,18 +168,15 @@ The Center uses a weighted sum to combine its goals with the element's goals.
 1. For each element $e$ and for each weight $\omega_e$ from a predefined set `element_data.w`:
    The following combined goal is maximized:
     * For `ElementLinearFirst` type:
-
 $$
 \max ((d_e^T + \omega_e \cdot c_e^T) y_e )
 $$
-
     * For `ElementLinearSecond` type:
-
 $$
 \max (d_e^T y_e + \omega_e \cdot c_e^T y_e^* )
 $$
+   Subject to element $e$'s original constraints.
 
-      Subject to element $e$'s original constraints.
 2. After solving for all $\omega_e$, the solution (plan and $\omega_e$ value) that maximizes the element's own
    standalone quality functional ($c_e^T y_e$ or $c_e^T y_e^*$) is chosen for that element.
 
@@ -213,11 +204,9 @@ Let $t=0$ be the conventional start time of the device.
 
 **Element's Objective (Combinatorial Model):**
 The unconditional criterion for the operational efficiency of the $k$-th element's production is:
-
 $$
 \max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) C_{kj}(\sigma_k)
 $$
-
 where:
 
 * $\sigma_k$ is a feasible schedule for element $k$.
@@ -231,11 +220,9 @@ where:
 
 **Center's Objective (for Combinatorial Elements):**
 The criterion for the organizational-production system as a whole, when elements have combinatorial models, is:
-
 $$
 \sum_{k=1}^{m} \max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{c}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \sum_{k=1}^{m} \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{c}(T_k) C_{kj}(\sigma_k)
 $$
-
 where:
 
 * $m$ is the total number of elements.
@@ -247,37 +234,37 @@ The problem of finding a compromise solution for this model decomposes into $m$ 
 
 1. **First Compromise Criterion (Strict Priority by Center):**
    The element $l$ must choose a schedule $\sigma_l^*$ such that:
-   $$
-   \sigma_l^* = \arg \min_{\sigma_l \in \{\sigma_l^c\}} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)
-   $$
+$$
+\sigma_l^* = \arg \min_{\sigma_l \in \{\sigma_l^c\}} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)
+$$
    where $\{\sigma_l^c\}$ is the set of schedules that are optimal for the Center's goal for element $l$:
-   $$
-   \{\sigma_l^c\} = \left\{ \sigma_l \mid \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
-   $$
+$$
+\{\sigma_l^c\} = \left\{ \sigma_l \mid \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
+$$
    and $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
    Finding $\sigma_l^*$ involves first finding $f_{opt_l}^c$ using a PSC algorithm, then solving a modified problem
    with the functional:
-   $$
-   \min_{\sigma_l} \sum_{j=1}^{n_l} (a \cdot \omega_j^{c}(T_l) + \omega_j^{el}(T_l)) C_{lj}(\sigma_l)
-   $$
+$$
+\min_{\sigma_l} \sum_{j=1}^{n_l} (a \cdot \omega_j^{c}(T_l) + \omega_j^{el}(T_l)) C_{lj}(\sigma_l)
+$$
    where $a > 0$ is a large enough number.
 
 2. **Second Compromise Criterion (Guaranteed Concession for Element):**
    The Center chooses a schedule for element $l$ by solving:
-   $$
-   \sigma_l^{**} = \arg \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)
-   $$
+$$
+\sigma_l^{**} = \arg \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)
+$$
    Subject to:
-   $$
-   \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l) \le f_{opt_l}^{el} + \Delta_l
-   $$
+$$
+\sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l) \le f_{opt_l}^{el} + \Delta_l
+$$
    where $f_{opt_l}^{el} = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{el}(T_l) C_{lj}(\sigma_l)$ (element's best
    performance), and $\Delta_l \ge 0$ is the concession.
    This criterion can be implemented via a recurrent procedure modifying weighting coefficients $a_1 \ge 0, a_2 > 0$
    in the combined goal:
-   $$
-   \min_{\sigma_l} \sum_{j=1}^{n_l} [a_1 \omega_j^{el}(T_l) + a_2 \omega_j^{c}(T_l)] C_{lj}(\sigma_l)
-   $$
+$$
+\min_{\sigma_l} \sum_{j=1}^{n_l} [a_1 \omega_j^{el}(T_l) + a_2 \omega_j^{c}(T_l)] C_{lj}(\sigma_l)
+$$
    to manage the trade-off between $\sum \omega_j^{c}C_{lj} - f_{opt_l}^c$
    and $\sum \omega_j^{el}C_{lj} - f_{opt_l}^{el}$.
 
