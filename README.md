@@ -174,13 +174,17 @@ The Center uses a weighted sum to combine its goals with the element's goals.
 1. For each element $e$ and for each weight $\omega_e$ from a predefined set `element_data.w`:
    The following combined goal is maximized:
     * For `ElementLinearFirst` type:
+
       $$
-      \max ((d_e^T + \omega_e \cdot c_e^T) y_e )
+      \max ((d_e^T + \omega_e \cdot c_e^T) y_e)
       $$
+
     * For `ElementLinearSecond` type:
+
       $$
       \max (d_e^T y_e + \omega_e \cdot c_e^T y_e^* )
       $$
+
       Subject to element $e$'s original constraints.
 2. After solving for all $\omega_e$, the solution (plan and $\omega_e$ value) that maximizes the element's own
    standalone quality functional ($c_e^T y_e$ or $c_e^T y_e^*$) is chosen for that element.
