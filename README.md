@@ -213,9 +213,11 @@ Let $t=0$ be the conventional start time of the device.
 
 **Element's Objective (Combinatorial Model):**
 The unconditional criterion for the operational efficiency of the $k$-th element's production is:
+
 $$
 \max_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) (T_k - C_{kj}(\sigma_k)) \implies \min_{\sigma_k} \sum_{j=1}^{n_k} \omega_j^{el}(T_k) C_{kj}(\sigma_k)
 $$
+
 where:
 
 * $\sigma_k$ is a feasible schedule for element $k$.
@@ -253,7 +255,7 @@ $$
 where $\{\sigma_l^c\}$ is the set of schedules that are optimal for the Center's goal for element $l$:
 
 $$
-\{\sigma_l^c\} = \left\{ \sigma_l \mid \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
+\{\sigma_l^c\} = \left\{ \sigma_l \,\middle|\, \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l) = f_{opt_l}^c \right\}
 $$
 
 and $f_{opt_l}^c = \min_{\sigma_l} \sum_{j=1}^{n_l} \omega_j^{c}(T_l) C_{lj}(\sigma_l)$.
@@ -304,7 +306,7 @@ The Center seeks to find plans $y_l$ and resource allocations $b_l$ for each ele
 solving:
 
 $$
-(y_1^*, ..., y_m^*, b_1^*, ..., b_m^*) = \arg \max_{y_l, b_l} \sum_{l=1}^m d_l^T y_l
+(y_1^* , ..., y_m^* , b_1^* , ..., b_m^* ) = \arg \max_{y_l, b_l} \sum_{l=1}^m d_l^T y_l
 $$
 
 Subject to:
