@@ -49,7 +49,7 @@ class CenterLinearThird(CenterSolver):
                 element_data.config, type=ElementType.DECENTRALIZED))) for e, element_data in enumerate(data.elements)])
         self.f_el_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, element_data.copy())
                                                         for element_data in data.elements])
-        self.element_solutions = list()
+        self.element_solutions: List[ElementSolution] = list()
         self.all_element_solutions: List[Dict[float, ElementSolution]] = [dict() for _ in data.elements]
         self.chosen_element_solutions_info = [(.0, ElementSolution()) for _ in data.elements]
 
@@ -102,8 +102,6 @@ class CenterLinearThird(CenterSolver):
 
     def modify_constraints(self, e: int, element_solver: ElementSolver) -> None:
         """
-        Set the element’s objective to maximize the center’s utility (d_e^T * y_e), effectively using w=0.
-
         This method fulfills the `CenterSolver` abstract interface requirement.
         For `CenterLinearThird`’s specific weighted balance strategy, the primary logic for
         modifying element goals with various weights `w` is handled within its overridden
@@ -121,7 +119,7 @@ class CenterLinearThird(CenterSolver):
         :param element_solver: The ElementSolver instance for the specific element.
         """
 
-        self._modify_element_objective_with_w(e, element_solver, .0)
+        pass
 
     def _solve_element_for_specific_w(self, e: int, element_data_copy: ElementData, w_scalar: float) -> ElementSolution:
         """
