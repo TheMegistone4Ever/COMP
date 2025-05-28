@@ -6,7 +6,7 @@ from numpy import array, int64, testing
 
 from comp.models import ElementData, ElementConfig, ElementType, CenterData, CenterType
 from comp.parallelization.heuristic import get_order
-from comp.solvers import new_center_solver, CenterLinearFirst, CenterLinearSecond, CenterLinearThird
+from comp.solvers import new_center_solver, CenterLinearFirst, CenterLinearSecond, CenterLinearThird, CenterLinkedFirst
 from comp.solvers.element import ElementLinearFirst, ElementLinearSecond
 from comp.solvers.factories import new_element_solver
 from comp.utils import (assert_positive, assert_non_negative, assert_bounds, assert_valid_dimensions, stringify, lp_sum,
@@ -238,14 +238,18 @@ class TestSolvers(TestCase):
         data_first = replace(base_data, config=replace(base_data.config, type=CenterType.STRICT_PRIORITY))
         data_second = replace(base_data, config=replace(base_data.config, type=CenterType.GUARANTEED_CONCESSION))
         data_third = replace(base_data, config=replace(base_data.config, type=CenterType.WEIGHTED_BALANCE))
+        data_fourth = replace(base_data, config=replace(base_data.config,
+                                                        type=CenterType.RESOURCE_ALLOCATION_COMPROMISE))
 
         solver_first = new_center_solver(data_first)
         solver_second = new_center_solver(data_second)
         solver_third = new_center_solver(data_third)
+        solver_fourth = new_center_solver(data_fourth)
 
         self.assertIsInstance(solver_first, CenterLinearFirst)
         self.assertIsInstance(solver_second, CenterLinearSecond)
         self.assertIsInstance(solver_third, CenterLinearThird)
+        self.assertIsInstance(solver_fourth, CenterLinkedFirst)
 
 
 if __name__ == "__main__":

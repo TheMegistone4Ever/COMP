@@ -52,8 +52,8 @@ def _parse_element_data(data: dict) -> ElementData:
         resource_constraints=(to_array(rc_raw[0]), to_array(rc_raw[1]), to_array(rc_raw[2]),
                               ) if rc_raw else (None, None, None),
         aggregated_plan_costs=to_array(data["aggregated_plan_costs"]),
-        delta=data.get("delta"),
-        w=to_array(data.get("w")),
+        delta=data.get("delta") if data.get("delta") is not None else None,
+        w=to_array(data.get("w")) if data.get("w") is not None else None,
     )
 
 
@@ -72,4 +72,6 @@ def load_center_data_from_json(filepath: str) -> CenterData:
         config=_parse_dataclass(CenterConfig, raw_data["config"]),
         coeffs_functional=[array(cf, dtype=float) for cf in raw_data["coeffs_functional"]],
         elements=[_parse_element_data(el) for el in raw_data["elements"]],
+        global_resource_constraints=array(raw_data.get("global_resource_constraints", []), dtype=float)
+        if raw_data.get("global_resource_constraints") else None,
     )

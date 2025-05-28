@@ -1,5 +1,5 @@
 from comp.models import CenterData, CenterType
-from .center import CenterLinearFirst, CenterLinearSecond, CenterLinearThird
+from .center import CenterLinearFirst, CenterLinearSecond, CenterLinearThird, CenterLinkedFirst
 from .core import BaseSolver, CenterSolver, ElementSolver
 from .factories import new_element_solver
 
@@ -23,6 +23,8 @@ def new_center_solver(data: CenterData) -> CenterSolver:
         return CenterLinearSecond(data)
     elif data.config.type == CenterType.WEIGHTED_BALANCE:
         return CenterLinearThird(data)
+    elif data.config.type == CenterType.RESOURCE_ALLOCATION_COMPROMISE:
+        return CenterLinkedFirst(data)
     else:
         raise ValueError(f"Unknown center type: {data.config.type}")
 
@@ -34,6 +36,7 @@ __all__ = [
     "CenterLinearFirst",
     "CenterLinearSecond",
     "CenterLinearThird",
+    "CenterLinkedFirst",
     "new_element_solver",
     "new_center_solver",
 ]

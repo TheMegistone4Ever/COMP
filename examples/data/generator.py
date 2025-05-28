@@ -47,7 +47,7 @@ class DataGenerator:
 
         random.seed(seed)
 
-    def _generate_element_data(self, element_idx: int) -> ElementData:
+    def _generate_element_data(self, element_idx: int, center_type: CenterType) -> ElementData:
         """
         Generate random data for a single element based on the generator’s configuration.
 
@@ -58,8 +58,8 @@ class DataGenerator:
         and `num_constraints` lists.
 
         :param element_idx: The index of the element for which to generate data.
-        This is used
-                            to determine its ID and to look up its specific counts of variables/constraints.
+        This is used to determine its ID and to look up its specific counts of variables/constraints.
+        :param center_type: The type of the center.
         :return: A randomly generated ElementData object.
         """
 
@@ -77,8 +77,9 @@ class DataGenerator:
                 random.randint(10, 15, n_e) * 100,
             ),
             aggregated_plan_costs=random.randint(1, 3, (m_e, n_e)),
-            delta=.5,
-            w=array([i * .5 for i in range(20)])
+            delta=.5 if center_type == CenterType.GUARANTEED_CONCESSION or CenterType.RESOURCE_ALLOCATION_COMPROMISE
+            else None,
+            w=array([i * .5 for i in range(20)]) if center_type == CenterType.WEIGHTED_BALANCE else None,
         )
 
     def generate_center_data(self) -> CenterData:
@@ -94,19 +95,30 @@ class DataGenerator:
         :return: A randomly generated CenterData object, including data for all its elements.
         """
 
+        center_type = random.choice(list(CenterType))
+        is_resource_allocation = center_type == CenterType.RESOURCE_ALLOCATION_COMPROMISE
+
+        if is_resource_allocation:
+            # In this case, we assume all elements have the same number of constraints
+            # Minimum number of constraints across all elements is taken for uniformity
+            self.num_constraints = [min(self.num_constraints)] * self.num_elements
+
         return CenterData(
             config=CenterConfig(
                 id=0,
                 min_parallelisation_threshold=cpu_count() or None,
                 num_threads=cpu_count() or 1,
-                type=random.choice(list(CenterType)),
+                type=center_type,
                 num_elements=self.num_elements
             ),
             coeffs_functional=[
                 random.randint(1, 10, self.num_decision_variables[e])
                 for e in range(self.num_elements)
             ],
-            elements=[self._generate_element_data(e) for e in range(self.num_elements)],
+            elements=[self._generate_element_data(e, center_type) for e in range(self.num_elements)],
+            global_resource_constraints=(
+                    random.randint(6, 15, self.num_constraints[0]) * 100 * self.num_elements
+            ) if is_resource_allocation else None
         )
 
 
