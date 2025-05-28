@@ -89,7 +89,7 @@ class CenterSolver(BaseSolver[CenterData]):
                 for e, sol in enumerate(self.element_solutions) if sol is not None]
         return stringify(sums), sum(sums)
 
-    def coordinate(self) -> None:
+    def coordinate(self, tolerance: float = 1e-9) -> None:
         """
         Coordinate the optimization process for all elements.
 
@@ -123,7 +123,7 @@ class CenterSolver(BaseSolver[CenterData]):
         if not self.setup_done:
             raise RuntimeError("The optimization problem has not been set up yet. Call coordinate() first.")
 
-        tab_out(f"\nInput data for center {stringify(self.data.config.id)}", (
+        input_data = [
             ("Center Type", stringify(self.data.config.type)),
             ("Center ID", stringify(self.data.config.id)),
             ("Center Number of Elements", stringify(self.data.config.num_elements)),
@@ -131,7 +131,12 @@ class CenterSolver(BaseSolver[CenterData]):
             ("Center Min Parallelization Threshold", stringify(self.data.config.min_parallelisation_threshold)),
             ("Center Number of Threads", stringify(self.data.config.num_threads)),
             ("Center Parallelization Order", stringify(self.order)),
-        ))
+        ]
+
+        if self.data.global_resource_constraints is not None:
+            input_data.append(("Global Resource Constraints", stringify(self.data.global_resource_constraints)))
+
+        tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
 
         self._populate_element_solvers()
         for solver_e in self.element_solvers:
@@ -169,6 +174,20 @@ class CenterSolver(BaseSolver[CenterData]):
             "data.config.min_parallelisation_threshold"
         )
 
+        if self.data.global_resource_constraints is not None:
+            for rcs, (resource_constraints) in enumerate(self.data.global_resource_constraints):
+                assert_valid_dimensions(
+                    [resource_constraints, ],
+                    [(self.data.elements[0].config.num_constraints,), ],
+                    [f"resource_constraints[{rcs}]", ]
+                )
+
+                for rc, (resource_constraint) in enumerate(resource_constraints):
+                    assert_non_negative(
+                        resource_constraint,
+                        f"data.global_resource_constraints[{rcs}][{rc}]"
+                    )
+
     def get_results_dict(self) -> Dict[str, Any]:
         """
         Get a dictionary representation of the center optimization results.
@@ -190,7 +209,7 @@ class CenterSolver(BaseSolver[CenterData]):
             "parallelization_order": self.order,
             "element_results": list(map(lambda solver: solver.get_results_dict(), self.element_solvers)),
             "center_quality_functional_summary_str": center_qf_str,
-            "center_quality_functional_total": center_qf_val
+            "center_quality_functional_total": center_qf_val,
         }
 
     def save_results_to_json(self, filepath: str) -> None:

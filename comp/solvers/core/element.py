@@ -144,7 +144,7 @@ class ElementSolver(BaseSolver[ElementData]):
         """
         Solve the optimization problem for the element.
 
-        If the problem hasn’t been set up, it raises a RuntimeError.
+        If the problem has not been set up, it raises a RuntimeError.
         If not already solved, it calls the OR-Tools solver.
         If an optimal solution is found, it stores and returns the objective value and solution variables.
         Otherwise, it returns infinity and an empty dictionary.
@@ -181,7 +181,7 @@ class ElementSolver(BaseSolver[ElementData]):
             print(f"\nNo optimal solution found for element: {self.data.config.id}.")
             return
 
-        tab_out(f"\nInput data for element {stringify(self.data.config.id)}", (
+        input_data = [
             ("Element Type", stringify(self.data.config.type)),
             ("Element ID", stringify(self.data.config.id)),
             ("Element Number of Decision Variables", stringify(self.data.config.num_decision_variables)),
@@ -189,9 +189,15 @@ class ElementSolver(BaseSolver[ElementData]):
             ("Element Functional Coefficients", stringify(self.data.coeffs_functional)),
             ("Element Resource Constraints", stringify(self.data.resource_constraints)),
             ("Element Aggregated Plan Costs", stringify(self.data.aggregated_plan_costs)),
-            ("Element Delta", stringify(self.data.delta)),
-            ("Element W", stringify(self.data.w)),
-        ))
+        ]
+
+        if self.data.delta is not None:
+            input_data.append(("Element Delta", stringify(self.data.delta)))
+
+        if self.data.w is not None:
+            input_data.append(("Element W", stringify(self.data.w)))
+
+        tab_out(f"\nInput data for element {stringify(self.data.config.id)}", input_data)
 
         print(f"\nElement {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 

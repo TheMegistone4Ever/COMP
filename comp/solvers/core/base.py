@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar, Union, Dict, Any
 
 from comp.models import BaseData
 
@@ -56,6 +56,20 @@ class BaseSolver(ABC, Generic[T_base_data]):
         It can return a numerical value or a string representation if appropriate.
 
         :return: The calculated quality is functional, as a float or a string.
+        """
+
+        pass
+
+    @abstractmethod
+    def get_results_dict(self) -> Dict[str, Any]:
+        """
+        Get the results of the optimization problem as a dictionary.
+
+        Concrete implementations should return a dictionary containing
+        relevant results, such as objective values, variable values, and
+        any other pertinent information from the optimization process.
+
+        :return: A dictionary with results from the optimization problem.
         """
 
         pass
