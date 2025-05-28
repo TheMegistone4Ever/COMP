@@ -2,6 +2,8 @@ from enum import ReprEnum
 from numbers import Number
 from typing import Any, Iterable, List, Protocol, Sequence, TypeVar, Tuple
 
+from ortools.linear_solver.pywraplp import Variable
+
 try:
     from typing import Self
 except ImportError:
@@ -152,7 +154,7 @@ class SupportsAdd(Protocol):
 T_lp_sum = TypeVar("T_lp_sum", bound=SupportsAdd)
 
 
-def lp_sum(variables: Iterable[T_lp_sum]) -> T_lp_sum:
+def lp_sum(variables: Iterable[T_lp_sum | Variable]) -> T_lp_sum:
     """
     Sum a sequence of elements that support addition, returning 0 for an empty sequence.
 

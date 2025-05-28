@@ -175,18 +175,17 @@ class CenterSolver(BaseSolver[CenterData]):
         )
 
         if self.data.global_resource_constraints is not None:
-            for rcs, (resource_constraints) in enumerate(self.data.global_resource_constraints):
-                assert_valid_dimensions(
-                    [resource_constraints, ],
-                    [(self.data.elements[0].config.num_constraints,), ],
-                    [f"resource_constraints[{rcs}]", ]
-                )
+            assert_valid_dimensions(
+                [self.data.global_resource_constraints, ],
+                [(self.data.elements[0].config.num_constraints,), ],
+                [f"data.global_resource_constraints", ]
+            )
 
-                for rc, (resource_constraint) in enumerate(resource_constraints):
-                    assert_non_negative(
-                        resource_constraint,
-                        f"data.global_resource_constraints[{rcs}][{rc}]"
-                    )
+            for rc, (resource_constraint) in enumerate(self.data.global_resource_constraints):
+                assert_non_negative(
+                    resource_constraint,
+                    f"data.global_resource_constraints[{rc}]"
+                )
 
     def get_results_dict(self) -> Dict[str, Any]:
         """
