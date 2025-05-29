@@ -135,14 +135,16 @@ class CenterSolver(BaseSolver[CenterData]):
             ("Center Parallelization Order", stringify(self.order)),
         ]
 
-        if self.data.global_resource_constraints is not None:
-            input_data.append(("Global Resource Constraints", stringify(self.data.global_resource_constraints)))
+        if (self.data.global_resource_constraints is not None
+                and self.data.f is not None):
+            input_data.extend([("Global Resource Constraints", stringify(self.data.global_resource_constraints)),
+                               ("Center Functional Thresholds", stringify(self.data.f)), ])
+
+        tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
 
         print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
         if print_details:
-            tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
-
             self._populate_element_solvers()
             for solver_e in self.element_solvers:
                 solver_e.print_results(print_details)
@@ -177,7 +179,7 @@ class CenterSolver(BaseSolver[CenterData]):
             "data.config.min_parallelisation_threshold"
         )
 
-        if self.data.global_resource_constraints is not None:
+        if self.data.global_resource_constraints is not None and self.data.f is not None:
             assert_valid_dimensions(
                 [self.data.global_resource_constraints, ],
                 [(self.data.elements[0].config.num_constraints,), ],
@@ -188,6 +190,18 @@ class CenterSolver(BaseSolver[CenterData]):
                 assert_non_negative(
                     resource_constraint,
                     f"data.global_resource_constraints[{rc}]"
+                )
+
+            assert_valid_dimensions(
+                [self.data.f, ],
+                [(self.data.config.num_elements,), ],
+                ["f", ]
+            )
+
+            for i, (f) in enumerate(self.data.f):
+                assert_positive(
+                    f,
+                    f"data.f[{i}]"
                 )
 
     def get_results_dict(self) -> Dict[str, Any]:
@@ -230,5 +244,5 @@ class CenterSolver(BaseSolver[CenterData]):
             for e, (solution, element_data) in enumerate(zip(self.element_solutions, self.data.elements)):
                 solver_e = new_element_solver(element_data)
                 solver_e.set_solution(solution)
-                solver_e.setup()
+                solver_e.setup(set_variables=False, set_constraints=False, set_objective=False)
                 self.element_solvers.append(solver_e)

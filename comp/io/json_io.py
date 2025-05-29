@@ -74,4 +74,5 @@ def load_center_data_from_json(filepath: str) -> CenterData:
         elements=[_parse_element_data(el) for el in raw_data["elements"]],
         global_resource_constraints=array(raw_data.get("global_resource_constraints", []), dtype=float)
         if raw_data.get("global_resource_constraints") else None,
+        f=array(raw_data.get("f", []), dtype=float) if raw_data.get("f") else None,
     )

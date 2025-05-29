@@ -1,14 +1,32 @@
 from functools import partial
-from typing import Optional, List, Dict, Any
+from typing import Dict, List, Optional, Any
+from typing import Tuple
 
+from numpy import ndarray
 from ortools.linear_solver.pywraplp import Solver, Variable
 
 from comp.models import CenterData, ElementType
 from comp.models import ElementSolution
 from comp.solvers.core import CenterSolver
 from comp.solvers.core.element import ElementSolver
-from comp.solvers.factories import execute_new_solver_from_data
-from comp.utils import lp_sum
+from comp.utils import lp_sum, stringify, tab_out
+
+
+def _calculate_element_own_quality(coeffs_functional: ndarray, type_e: ElementType, y_e: List[float],
+                                   y_star_e: Optional[List[float]] = None) -> float:
+    """
+    Calculate the element’s own quality functional value based on its type and solution.
+    For NEGOTIATED elements, the quality is c_e^T * y_star_e.
+    For DECENTRALIZED elements, the quality is c_e^T * y_e.
+
+    :param coeffs_functional: Coefficients of the functional for the element.
+    :param type_e: The type of the element (DECENTRALIZED or NEGOTIATED).
+    :param y_e: The decision variable values for the element.
+    :param y_star_e: The private decision variable values for NEGOTIATED elements, if applicable.
+    :return: The calculated quality functional value as a float.
+    """
+
+    return sum(c * y for c, y in zip(coeffs_functional, y_star_e if type_e == ElementType.NEGOTIATED else y_e))
 
 
 class CenterLinkedFirst(CenterSolver):
@@ -22,8 +40,6 @@ class CenterLinkedFirst(CenterSolver):
         self.y: List[List[Variable]] = [list() for _ in range(self.data.config.num_elements)]
         self.y_star: List[List[Variable]] = [list() for _ in range(self.data.config.num_elements)]
         self.b: List[List[Variable]] = [list() for _ in range(self.data.config.num_elements)]
-        self.f_el_opt = self.parallel_executor.execute([partial(execute_new_solver_from_data, element_data.copy())
-                                                        for element_data in data.elements])
 
     def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
         pass
@@ -31,6 +47,25 @@ class CenterLinkedFirst(CenterSolver):
     def coordinate(self, tolerance: float = 1e-9) -> None:
         self.setup()
         self.solve()
+
+        self.element_solutions = self.parallel_executor.execute(
+            [partial(
+                lambda e, data: ElementSolution(
+                    objective=_calculate_element_own_quality(
+                        data.coeffs_functional, data.config.type,
+                        y_e := self.solution.plan.get("y")[e] if self.solution.plan.get("y") else list(),
+                        y_star_e := self.solution.plan.get("y_star")[e] if self.solution.plan.get("y_star") else None
+                    ),
+                    plan={
+                        "y_e": y_e,
+                        "y_star_e": y_star_e,
+                        "b_e": self.solution.plan.get("b")[e] if self.solution.plan.get("b") else list()
+                    }
+                ),
+                e, element_data
+            )
+                for e, element_data in enumerate(self.data.elements)]
+        )
 
     def setup_constraints(self) -> None:
         # Resource constraints: sum of b_e <= b
@@ -58,11 +93,11 @@ class CenterLinkedFirst(CenterSolver):
                         self.y[e][i] <= element.resource_constraints[2][i]
                     )
 
-                # Optimality Inequality Constraint: c_e^T * y_e >= f_el_opt_e * (1 - delta_e)
+                # Optimality Inequality Constraint: c_e^T * y_e >= f_e * (1 - delta_e)
                 self.solver.Add(
                     lp_sum(element.coeffs_functional[i] * self.y[e][i]
                            for i in range(element.config.num_decision_variables))
-                    >= self.f_el_opt[e] * (1 - element.delta)
+                    >= self.data.f[e] * (1 - element.delta)
                 )
             else:
                 # Resource constraints: A_e * (y_e + y_star_e) <= b_e
@@ -85,11 +120,11 @@ class CenterLinkedFirst(CenterSolver):
                         self.y[e][i] + self.y_star[e][i] <= element.resource_constraints[2][i]
                     )
 
-                # Optimality Inequality Constraint: c_e^T * y_star_e >= f_el_opt_e * (1 - delta_e)
+                # Optimality Inequality Constraint: c_e^T * y_star_e >= f_e * (1 - delta_e)
                 self.solver.Add(
                     lp_sum(element.coeffs_functional[i] * self.y_star[e][i]
                            for i in range(element.config.num_decision_variables))
-                    >= self.f_el_opt[e] * (1 - element.delta)
+                    >= self.data.f[e] * (1 - element.delta)
                 )
 
     def setup_objective(self) -> None:
@@ -114,7 +149,7 @@ class CenterLinkedFirst(CenterSolver):
         """
         Set up optimization variables for the first linked model.
 
-        Creates decision variables for each element's b_0, y, and y_star.
+        Creates decision variables for each element’s b_0, y, and y_star.
         """
 
         for i, (element) in enumerate(self.data.elements):
@@ -178,8 +213,49 @@ class CenterLinkedFirst(CenterSolver):
 
         return self.solution
 
+    def quality_functional(self) -> Tuple[str, float]:
+        sums = [sum(d * y for d, y in zip(self.data.coeffs_functional[e], sol))
+                for e, sol in enumerate(self.solution.plan.get("y")) if sol is not None]
+        return stringify(sums), sum(sums)
+
     def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
-        super().print_results(print_details)
+        super().print_results(False)
+
+        if not print_details:
+            return
+
+        self._populate_element_solvers()
+        for solver_e in self.element_solvers:
+            if self.solution.objective == float("-inf") and not self.solution.plan:
+                print(f"\nNo optimal solution found for center {self.data.config.id}.")
+                return
+
+            input_data = [
+                ("Element Type", stringify(solver_e.data.config.type)),
+                ("Element ID", stringify(solver_e.data.config.id)),
+                ("Element Number of Decision Variables", stringify(solver_e.data.config.num_decision_variables)),
+                ("Element Number of Constraints", stringify(solver_e.data.config.num_constraints)),
+                ("Element Functional Coefficients", stringify(solver_e.data.coeffs_functional)),
+                ("Element Resource Constraints", stringify(solver_e.data.resource_constraints)),
+                ("Element Aggregated Plan Costs", stringify(solver_e.data.aggregated_plan_costs)),
+                ("Element Delta", stringify(solver_e.data.delta)),
+            ]
+
+            tab_out(f"\nInput data for element {stringify(solver_e.data.config.id)}", input_data)
+
+            print(f"\nElement {stringify(solver_e.data.config.id)} "
+                  f"quality functional: {stringify(solver_e.quality_functional())}")
+
+            optimization_data = [
+                ("Resource Constraints", stringify((dict_solved := solver_e.solve().plan)["b_e"])),
+                ("Decision Variables", stringify(dict_solved["y_e"])),
+            ]
+            if solver_e.data.config.type == ElementType.NEGOTIATED:
+                optimization_data.append(
+                    ("Private Decision Variables", stringify(dict_solved["y_star_e"]))
+                )
+
+            tab_out(f"Optimization results for element {stringify(solver_e.data.config.id)}", optimization_data)
 
     def get_results_dict(self, tolerance: float = 1e-9) -> Dict[str, Any]:
         """
@@ -190,4 +266,17 @@ class CenterLinkedFirst(CenterSolver):
                  and the solution if available.
         """
 
-        pass
+        if not self.setup_done:
+            self.coordinate()
+
+        base_results = super().get_results_dict()
+
+        base_results.update({
+            "status": self.status,
+            "solution": {
+                "objective_value": self.solution.objective if self.solution else None,
+                "b": self.solution.plan.get("b") if self.solution else None,
+            }
+        })
+
+        return base_results

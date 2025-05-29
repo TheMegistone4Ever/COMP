@@ -61,6 +61,7 @@ class CenterData(BaseData):
     elements: List[ElementData]
 
     global_resource_constraints: Optional[ndarray] = None  # b
+    f: Optional[ndarray] = None  # f
 
     def save_to_json(self, filepath: str) -> None:
         global_save_json_util(self, filepath)
