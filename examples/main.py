@@ -24,7 +24,7 @@ def main() -> None:
     print(f"Center data loaded from {generated_data_filepath}")
 
     center_data_for_solver = replace(center_data_loaded, config=replace(
-        center_data_loaded.config, type=CenterType.WEIGHTED_BALANCE))
+        center_data_loaded.config, type=CenterType.RESOURCE_ALLOCATION_COMPROMISE))
 
     center_linear_solver = new_center_solver(center_data_for_solver)
 

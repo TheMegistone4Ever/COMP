@@ -108,15 +108,21 @@ class ElementLinearSecond(ElementSolver):
 
         return self.y_star_e[pos]
 
-    def print_results(self) -> None:
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
         """
         Print the detailed results of the optimization for this element model.
 
         Calls the base class’s `print_results` and then adds specific output
         for both decision variables (y_e) and private decision variables (y_star_e).
+
+        :param print_details: If True, print additional details about the optimization results.
+        :param tolerance: The tolerance for comparing floating-point numbers.
         """
 
-        super().print_results()
+        if not print_details:
+            return
+
+        super().print_results(print_details)
 
         tab_out(f"Optimization results for element {stringify(self.data.config.id)}", (
             ("Decision Variables", stringify((dict_solved := self.solve().plan)["y_e"])),

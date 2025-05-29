@@ -168,21 +168,18 @@ class CenterLinkedFirst(CenterSolver):
             self.solved = True
             self.status = self.solver.Solve()
             if self.status in (Solver.OPTIMAL, Solver.FEASIBLE):
-                self.solution = (
-                        self.solver.Objective().Value(),
-                        {
-                            "y": [[v.solution_value() for v in y_e] for y_e in self.y],
-                            "y_star": [[v.solution_value() for v in y_star_e] for y_star_e in self.y_star],
-                            "b": [[v.solution_value() for v in b_e] for b_e in self.b]
-                        }
-                )
+                self.solution = ElementSolution(self.solver.Objective().Value(), {
+                    "y": [[v.solution_value() for v in y_e] for y_e in self.y],
+                    "y_star": [[v.solution_value() for v in y_star_e] for y_star_e in self.y_star],
+                    "b": [[v.solution_value() for v in b_e] for b_e in self.b]
+                })
             else:
-                self.solution = ElementSolution(float("-inf"), dict())
+                self.solution = ElementSolution()
 
         return self.solution
 
-    def print_results(self) -> None:
-        print(self.solution)
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
+        super().print_results(print_details)
 
     def get_results_dict(self, tolerance: float = 1e-9) -> Dict[str, Any]:
         """

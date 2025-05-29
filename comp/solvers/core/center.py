@@ -109,7 +109,7 @@ class CenterSolver(BaseSolver[CenterData]):
 
         self.setup_done = True
 
-    def print_results(self) -> None:
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
         """
         Print the comprehensive results of the center’s optimization problem.
 
@@ -117,6 +117,8 @@ class CenterSolver(BaseSolver[CenterData]):
         and then calls `print_results` for each element solver.
         Finally, prints the center’s own quality functional.
 
+        :param print_details: If True, print additional details about the optimization results.
+        :param tolerance: The tolerance for comparing floating-point numbers.
         :raises RuntimeError: If `coordinate()` has not been called first.
         """
 
@@ -136,11 +138,12 @@ class CenterSolver(BaseSolver[CenterData]):
         if self.data.global_resource_constraints is not None:
             input_data.append(("Global Resource Constraints", stringify(self.data.global_resource_constraints)))
 
-        tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
+        if print_details:
+            tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
 
         self._populate_element_solvers()
         for solver_e in self.element_solvers:
-            solver_e.print_results()
+            solver_e.print_results(print_details)
 
         print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 

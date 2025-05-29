@@ -17,7 +17,7 @@ class ElementSolution:
     """Solution data for an element in the system."""
 
     objective: float = float("-inf")
-    plan: Dict[str, List[float]] = field(default_factory=dict)
+    plan: Dict[str, List[float | List[float]]] = field(default_factory=dict)
 
 
 class ElementType(Enum):

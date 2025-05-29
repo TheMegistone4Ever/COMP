@@ -25,12 +25,15 @@ class BaseSolver(ABC, Generic[T_base_data]):
         self.validate_input()
 
     @abstractmethod
-    def print_results(self) -> None:
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
         """
         Print the results of the optimization problem.
 
         Concrete implementations should define how to format and display
         the solution and relevant metrics.
+
+        :param print_details: If True, print additional details about the optimization results.
+        :param tolerance: The tolerance for comparing floating-point numbers.
         """
 
         pass

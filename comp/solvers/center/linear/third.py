@@ -210,7 +210,7 @@ class CenterLinearThird(CenterSolver):
 
         self.setup_done = True
 
-    def print_results(self, tolerance: float = 1e-9) -> None:
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
         """
         Print the comprehensive results of the center’s optimization problem for the weighted balance strategy.
 
@@ -229,10 +229,11 @@ class CenterLinearThird(CenterSolver):
             - Chosen center contribution
             - Chosen combined objective value
 
+        :param print_details: If True, print additional details about the optimization results.
         :param tolerance: The tolerance for comparing floating-point numbers.
         """
 
-        super().print_results()
+        super().print_results(print_details)
 
         for e, element_data in enumerate(self.data.elements):
             chosen_w, chosen_solution_info = self.chosen_element_solutions_info[e]

@@ -95,7 +95,7 @@ class DataGenerator:
         :return: A randomly generated CenterData object, including data for all its elements.
         """
 
-        center_type = random.choice(list(CenterType))
+        center_type = CenterType.RESOURCE_ALLOCATION_COMPROMISE
         is_resource_allocation = center_type == CenterType.RESOURCE_ALLOCATION_COMPROMISE
 
         if is_resource_allocation:

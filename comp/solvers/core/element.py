@@ -163,11 +163,11 @@ class ElementSolver(BaseSolver[ElementData]):
             if self.status in (Solver.OPTIMAL, Solver.FEASIBLE):
                 self.solution = ElementSolution(self.solver.Objective().Value(), self.get_plan())
             else:
-                self.solution = ElementSolution(float("-inf"), dict())
+                self.solution = ElementSolution()
 
         return self.solution
 
-    def print_results(self) -> None:
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
         """
         Print the results of the optimization for the element problem.
 
@@ -175,7 +175,13 @@ class ElementSolver(BaseSolver[ElementData]):
         If no optimal solution is found, print a message.
         Otherwise, displays input data and the element’s quality functional.
         Concrete subclasses may extend this to print more specific solution details.
+
+        :param print_details: If True, print additional details about the optimization results.
+        :param tolerance: The tolerance for comparing floating-point numbers.
         """
+
+        if not print_details:
+            return
 
         if (solution := self.solve()).objective == float("-inf") and not solution.plan:
             print(f"\nNo optimal solution found for element: {self.data.config.id}.")
