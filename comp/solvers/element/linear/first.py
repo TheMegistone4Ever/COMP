@@ -88,15 +88,21 @@ class ElementLinearFirst(ElementSolver):
 
         return self.y_e[pos]
 
-    def print_results(self) -> None:
+    def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
         """
         Print the detailed results of the optimization for this element model.
 
         Calls the base class’s `print_results` and then add specific output
         for the decision variables (y_e).
+
+        :param print_details: If True, print additional details about the optimization results.
+        :param tolerance: The tolerance for comparing floating-point numbers.
         """
 
-        super().print_results()
+        if not print_details:
+            return
+
+        super().print_results(print_details)
 
         tab_out(f"Optimization results for element {stringify(self.data.config.id)}", (
             ("Decision Variables", stringify(self.solve().plan.get("y_e"))),
