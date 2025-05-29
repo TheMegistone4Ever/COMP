@@ -78,8 +78,7 @@ class DataGenerator:
                 random.randint(10, 15, n_e) * 100,
             ),
             aggregated_plan_costs=random.randint(1, 3, (m_e, n_e)),
-            delta=.5 if center_type == CenterType.GUARANTEED_CONCESSION or CenterType.RESOURCE_ALLOCATION_COMPROMISE
-            else None,
+            delta=.5 if center_type == CenterType.GUARANTEED_CONCESSION else None,
             w=array([i * .5 for i in range(20)]) if center_type == CenterType.WEIGHTED_BALANCE else None,
         )
 

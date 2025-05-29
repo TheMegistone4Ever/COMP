@@ -93,11 +93,11 @@ class CenterLinkedFirst(CenterSolver):
                         self.y[e][i] <= element.resource_constraints[2][i]
                     )
 
-                # Optimality Inequality Constraint: c_e^T * y_e >= f_e * (1 - delta_e)
+                # Optimality Inequality Constraint: c_e^T * y_e >= f_e
                 self.solver.Add(
                     lp_sum(element.coeffs_functional[i] * self.y[e][i]
                            for i in range(element.config.num_decision_variables))
-                    >= self.data.f[e] * (1 - element.delta)
+                    >= self.data.f[e]
                 )
             else:
                 # Resource constraints: A_e * (y_e + y_star_e) <= b_e
@@ -120,11 +120,11 @@ class CenterLinkedFirst(CenterSolver):
                         self.y[e][i] + self.y_star[e][i] <= element.resource_constraints[2][i]
                     )
 
-                # Optimality Inequality Constraint: c_e^T * y_star_e >= f_e * (1 - delta_e)
+                # Optimality Inequality Constraint: c_e^T * y_star_e >= f_e
                 self.solver.Add(
                     lp_sum(element.coeffs_functional[i] * self.y_star[e][i]
                            for i in range(element.config.num_decision_variables))
-                    >= self.data.f[e] * (1 - element.delta)
+                    >= self.data.f[e]
                 )
 
     def setup_objective(self) -> None:
