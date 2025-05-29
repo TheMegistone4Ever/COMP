@@ -138,14 +138,14 @@ class CenterSolver(BaseSolver[CenterData]):
         if self.data.global_resource_constraints is not None:
             input_data.append(("Global Resource Constraints", stringify(self.data.global_resource_constraints)))
 
+        print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
+
         if print_details:
             tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
 
             self._populate_element_solvers()
             for solver_e in self.element_solvers:
                 solver_e.print_results(print_details)
-
-        print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
     def validate_input(self) -> None:
         """
