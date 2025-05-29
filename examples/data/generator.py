@@ -72,7 +72,8 @@ class DataGenerator:
             ),
             coeffs_functional=random.randint(1, 10, n_e),
             resource_constraints=(
-                random.randint(5, 10, m_e) * 100,
+                random.randint(5, 10, m_e) * 100 if center_type != CenterType.RESOURCE_ALLOCATION_COMPROMISE
+                else None,
                 random.randint(0, 3, n_e),
                 random.randint(10, 15, n_e) * 100,
             ),
@@ -95,7 +96,7 @@ class DataGenerator:
         :return: A randomly generated CenterData object, including data for all its elements.
         """
 
-        center_type = CenterType.RESOURCE_ALLOCATION_COMPROMISE
+        center_type = random.choice(list(CenterType))
         is_resource_allocation = center_type == CenterType.RESOURCE_ALLOCATION_COMPROMISE
 
         if is_resource_allocation:
@@ -118,7 +119,8 @@ class DataGenerator:
             elements=[self._generate_element_data(e, center_type) for e in range(self.num_elements)],
             global_resource_constraints=(
                     random.randint(6, 15, self.num_constraints[0]) * 100 * self.num_elements
-            ) if is_resource_allocation else None
+            ) if is_resource_allocation else None,
+            f=random.randint(100, 1000, self.num_elements) if is_resource_allocation else None,
         )
 
 

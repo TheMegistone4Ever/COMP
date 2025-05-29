@@ -53,7 +53,7 @@ class ElementData(BaseData):
 
     config: ElementConfig
     coeffs_functional: ndarray  # c_e
-    resource_constraints: Tuple[ndarray, ndarray, ndarray]  # b_e, b_e_1, b_e_2
+    resource_constraints: Tuple[Optional[ndarray], ndarray, ndarray]  # b_e, b_e_1, b_e_2
     aggregated_plan_costs: ndarray  # A_e
 
     delta: Optional[float] = None  # delta_e
@@ -75,7 +75,7 @@ class ElementData(BaseData):
         return ElementData(
             config=self.config,
             coeffs_functional=self.coeffs_functional.copy(),
-            resource_constraints=(b_e.copy(), b_e_1.copy(), b_e_2.copy()),
+            resource_constraints=(b_e.copy() if b_e is not None else None, b_e_1.copy(), b_e_2.copy()),
             aggregated_plan_costs=self.aggregated_plan_costs.copy(),
             delta=self.delta,
             w=self.w.copy() if self.w is not None else None,

@@ -125,7 +125,7 @@ class CenterLinearThird(CenterSolver):
         Create and solve an element’s optimization problem for a specific weight `w_scalar`.
 
         A new element solver is instantiated, its goal is modified using
-        `_modify_element_objective_with_w`, and then it’s solved.
+        `_modify_element_objective_with_w`, and then it is solved.
 
         :param e: The index of the element.
         :param element_data_copy: A copy of the ElementData for the element.
