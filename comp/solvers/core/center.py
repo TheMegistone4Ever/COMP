@@ -141,9 +141,9 @@ class CenterSolver(BaseSolver[CenterData]):
         if print_details:
             tab_out(f"\nInput data for center {stringify(self.data.config.id)}", input_data)
 
-        self._populate_element_solvers()
-        for solver_e in self.element_solvers:
-            solver_e.print_results(print_details)
+            self._populate_element_solvers()
+            for solver_e in self.element_solvers:
+                solver_e.print_results(print_details)
 
         print(f"\nCenter {stringify(self.data.config.id)} quality functional: {stringify(self.quality_functional())}")
 
