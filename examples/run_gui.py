@@ -1,6 +1,6 @@
 from multiprocessing import freeze_support
 from os import path
-from sys import path as sys_path, argv, exit
+from sys import path as sys_path, argv, exit as sys_exit
 
 from PyQt5.QtWidgets import QApplication
 
@@ -17,7 +17,7 @@ def main_app():
     app = QApplication(argv)
     main_win = MainWindow()
     main_win.show()
-    exit(app.exec_())
+    sys_exit(app.exec_())
 
 
 if __name__ == "__main__":

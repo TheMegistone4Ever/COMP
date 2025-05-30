@@ -263,7 +263,7 @@ class CenterLinkedFirst(CenterSolver):
         """
         Print the comprehensive results of the center’s linked optimization problem.
 
-        Calls the base class's `print_results` (with details=False to avoid recursion/repetition),
+        Calls the base class’s `print_results` (with details=False to avoid recursion/repetition),
         then print detailed input and results for each element based on the global solution.
 
         :param print_details: If True, print additional details about the optimization results.
