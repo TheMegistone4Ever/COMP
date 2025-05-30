@@ -22,12 +22,16 @@ def main_app():
 
 if __name__ == "__main__":
     """
-    This script is used to run the GUI application:
+    This script is used to build the GUI application on Windows 11:
 
     pyinstaller --onefile --windowed --name "COMP" --clean `
     --upx-dir="C:\\upx-4.2.4" `
+    --upx-exclude _uuid.pyd `
+    --upx-exclude python3.dll `
     --version-file version.txt `
-    --add-data "comp/media/COMP.ico:comp/media" `
+    --add-data "./comp/media/COMP.ico:comp/media" `
+    --icon="./comp/media/COMP.ico" `
+    --collect-all ortools `
     --distpath dist_ui `
     --workpath build_ui `
     examples/run_gui.py
