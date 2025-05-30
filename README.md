@@ -540,6 +540,9 @@ COMP/
 │   ├── io/
 │   │   ├── json_io.py
 │   │   └── __init__.py
+│   ├── media/
+│   │   ├── COMP.ico
+│   │   └── __init__.py
 │   ├── models/
 │   │   ├── base.py
 │   │   ├── center.py
@@ -559,10 +562,13 @@ COMP/
 │   │   ├── __init__.py
 │   │   ├── center/
 │   │   │   ├── __init__.py
-│   │   │   └── linear/
+│   │   │   ├── linear/
+│   │   │   │   ├── first.py
+│   │   │   │   ├── second.py
+│   │   │   │   ├── third.py
+│   │   │   │   └── __init__.py
+│   │   │   └── linked/
 │   │   │       ├── first.py
-│   │   │       ├── second.py
-│   │   │       ├── third.py
 │   │   │       └── __init__.py
 │   │   ├── core/
 │   │   │   ├── base.py
@@ -582,9 +588,7 @@ COMP/
 │   │   ├── results_tab.py
 │   │   ├── styles.py
 │   │   ├── worker.py
-│   │   ├── __init__.py
-│   │   └── media/
-│   │       └── COMP.ico
+│   │   └── __init__.py
 │   └── utils/
 │       ├── assertions.py
 │       ├── helpers.py
@@ -648,6 +652,8 @@ COMP/
         * `first.py` (`CenterLinearFirst`): Implements the "Strict Priority" strategy.
         * `second.py` (`CenterLinearSecond`): Implements the "Guaranteed Concession" strategy.
         * `third.py` (`CenterLinearThird`): Implements the "Weighted Balance" strategy.
+    * `center/linked/`: Concrete implementations of linked center coordination strategies.
+        * `first.py` (`CenterLinkedFirst`): Implements the first linked strategy.
     * `factories.py`: Factory functions (`new_element_solver`, `new_center_solver`) to create appropriate solver
       instances based on configuration.
 * **`comp.parallelization`**: Logic for parallel execution of element subproblems.
