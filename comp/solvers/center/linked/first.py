@@ -2,35 +2,28 @@ from functools import partial
 from typing import Dict, List, Optional, Any
 from typing import Tuple
 
-from numpy import ndarray
 from ortools.linear_solver.pywraplp import Solver, Variable
 
 from comp.models import CenterData, ElementType
 from comp.models import ElementSolution
 from comp.solvers.core import CenterSolver
 from comp.solvers.core.element import ElementSolver
-from comp.utils import lp_sum, stringify, tab_out
-
-
-def _calculate_element_own_quality(coeffs_functional: ndarray, type_e: ElementType, y_e: List[float],
-                                   y_star_e: Optional[List[float]] = None) -> float:
-    """
-    Calculate the element’s own quality functional value based on its type and solution.
-    For NEGOTIATED elements, the quality is c_e^T * y_star_e.
-    For DECENTRALIZED elements, the quality is c_e^T * y_e.
-
-    :param coeffs_functional: Coefficients of the functional for the element.
-    :param type_e: The type of the element (DECENTRALIZED or NEGOTIATED).
-    :param y_e: The decision variable values for the element.
-    :param y_star_e: The private decision variable values for NEGOTIATED elements, if applicable.
-    :return: The calculated quality functional value as a float.
-    """
-
-    return sum(c * y for c, y in zip(coeffs_functional, y_star_e if type_e == ElementType.NEGOTIATED else y_e))
+from comp.utils import lp_sum, stringify, tab_out, calculate_element_own_quality
 
 
 class CenterLinkedFirst(CenterSolver):
+    """Solver for center-level optimization problems with linked resource constraints. 1’st linked model."""
+
     def __init__(self, data: CenterData) -> None:
+        """
+        Initialize the CenterLinkedFirst solver.
+
+        Sets up the base solver, creates an OR-Tools GLOP solver instance for the linked problem,
+        and initializes variables for decision variables (y, y_star) and allocated resources (b).
+
+        :param data: The CenterData object containing configuration for the center problem.
+        """
+
         super().__init__(data)
 
         self.solver = Solver.CreateSolver("GLOP")
@@ -42,16 +35,34 @@ class CenterLinkedFirst(CenterSolver):
         self.b: List[List[Variable]] = [list() for _ in range(self.data.config.num_elements)]
 
     def modify_constraints(self, element_index: int, element_solver: ElementSolver) -> None:
+        """
+        This method fulfills the `CenterSolver` abstract interface requirement.
+        For `CenterLinkedFirst`, constraints are defined globally within `setup_constraints`.
+        Individual element solver modification is not performed in the same way as other strategies.
+
+        :param element_index: The index of the element.
+        :param element_solver: The ElementSolver instance (not directly used here).
+        """
+
         pass
 
     def coordinate(self, tolerance: float = 1e-9) -> None:
+        """
+        Coordinate the optimization for the linked problem.
+
+        This involves setting up and solving the single, coupled optimization problem.
+        After solving, it populates `self.element_solutions` based on the global solution.
+
+        :param tolerance: The tolerance for comparing floating-point numbers (not directly used in this method).
+        """
+
         self.setup()
         self.solve()
 
         self.element_solutions = self.parallel_executor.execute(
             [partial(
                 lambda e, data: ElementSolution(
-                    objective=_calculate_element_own_quality(
+                    objective=calculate_element_own_quality(
                         data.coeffs_functional, data.config.type,
                         y_e := self.solution.plan.get("y")[e] if self.solution.plan.get("y") else list(),
                         y_star_e := self.solution.plan.get("y_star")[e] if self.solution.plan.get("y_star") else None
@@ -68,6 +79,14 @@ class CenterLinkedFirst(CenterSolver):
         )
 
     def setup_constraints(self) -> None:
+        """
+        Set up optimization constraints for the linked problem.
+
+        Adds global resource constraints (linked): sum of b_e <= b.
+        For each element, adds its specific local constraints (resource usage, bounds)
+        and performance guarantee constraints (c_e^T * y_e or c_e^T * y_star_e >= f_e).
+        """
+
         # Resource constraints: sum of b_e <= b
         for nc in range(self.data.elements[0].config.num_constraints):
             self.solver.Add(
@@ -131,7 +150,7 @@ class CenterLinkedFirst(CenterSolver):
         """
         Set up the objective function for the first linked model.
 
-        Maximize sum of d_e^T * y_e.
+        Maximize a sum of d_e^T * y_e over all elements e.
         """
 
         objective = self.solver.Objective()
@@ -149,7 +168,8 @@ class CenterLinkedFirst(CenterSolver):
         """
         Set up optimization variables for the first linked model.
 
-        Creates decision variables for each element’s b_0, y, and y_star.
+        Creates decision variables for each element’s allocated resources (b_e),
+        plan variables (y_e), and private plan variables (y_star_e) if applicable.
         """
 
         for i, (element) in enumerate(self.data.elements):
@@ -170,6 +190,17 @@ class CenterLinkedFirst(CenterSolver):
                 ]
 
     def setup(self, set_variables: bool = True, set_constraints: bool = True, set_objective: bool = True) -> None:
+        """
+        Set up the complete optimization problem for the linked model.
+
+        Orchestrates the setup by calling `setup_variables`, `setup_constraints`, and `setup_objective`.
+        Ensures setup is done only once.
+
+        :param set_variables: If True, call `setup_variables`.
+        :param set_constraints: If True, call `setup_constraints`.
+        :param set_objective: If True, call `setup_objective`.
+        """
+
         if self.setup_done:
             return
 
@@ -184,16 +215,16 @@ class CenterLinkedFirst(CenterSolver):
 
     def solve(self) -> ElementSolution:
         """
-        Solve the optimization problem for the element.
+        Solve the coupled optimization problem for the center.
 
         If the problem has not been set up, it raises a RuntimeError.
         If not already solved, it calls the OR-Tools solver.
         If an optimal solution is found, it stores and returns the objective value and solution variables.
-        Otherwise, it returns infinity and an empty dictionary.
+        Otherwise, it returns an ElementSolution with default (no solution) values.
 
         :raises RuntimeError: If `setup()` has not been called first.
-        :return: A tuple containing the objective value (float, or float("-inf") if no solution)
-                 and a dictionary of solution variables (Dict[str, List[float]]).
+        :return: An ElementSolution object containing the objective value and a dictionary of solution variables
+                 (y, y_star, b for all elements).
         """
 
         if not self.setup_done:
@@ -214,11 +245,31 @@ class CenterLinkedFirst(CenterSolver):
         return self.solution
 
     def quality_functional(self) -> Tuple[str, float]:
+        """
+        Calculate the center’s overall quality functional for the linked model.
+
+        This is the sum of (d_e^T * y_e) over all elements, based on the solved `y` variables.
+        Returns both a string representation of individual sums and the total sum.
+
+        :return: A tuple containing a string representation of the sums for each element
+                 and the total sum as a float.
+        """
+
         sums = [sum(d * y for d, y in zip(self.data.coeffs_functional[e], sol))
                 for e, sol in enumerate(self.solution.plan.get("y")) if sol is not None]
         return stringify(sums), sum(sums)
 
     def print_results(self, print_details: bool = True, tolerance: float = 1e-9) -> None:
+        """
+        Print the comprehensive results of the center’s linked optimization problem.
+
+        Calls the base class's `print_results` (with details=False to avoid recursion/repetition),
+        then print detailed input and results for each element based on the global solution.
+
+        :param print_details: If True, print additional details about the optimization results.
+        :param tolerance: The tolerance for comparing floating-point numbers.
+        """
+
         super().print_results(False)
 
         if not print_details:

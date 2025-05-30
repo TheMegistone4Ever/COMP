@@ -1,6 +1,6 @@
 from enum import ReprEnum
 from numbers import Number
-from typing import Any, Iterable, List, Protocol, Sequence, TypeVar, Tuple
+from typing import Any, Iterable, List, Protocol, Sequence, TypeVar, Tuple, Optional
 
 from ortools.linear_solver.pywraplp import Variable
 
@@ -12,7 +12,7 @@ except ImportError:
 from numpy import array, ndarray
 from tabulate import tabulate
 
-from comp.models.element import ElementData
+from comp.models.element import ElementData, ElementType
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
@@ -192,6 +192,23 @@ def get_lp_problem_sizes(data: List[ElementData]) -> List[Tuple[int, int]]:
     """
 
     return [(d.config.num_constraints, d.config.num_decision_variables) for d in data]
+
+
+def calculate_element_own_quality(coeffs_functional: ndarray, type_e: ElementType, y_e: List[float],
+                                  y_star_e: Optional[List[float]] = None) -> float:
+    """
+    Calculate the element’s own quality functional value based on its type and solution.
+    For NEGOTIATED elements, the quality is c_e^T * y_star_e.
+    For DECENTRALIZED elements, the quality is c_e^T * y_e.
+
+    :param coeffs_functional: Coefficients of the functional for the element.
+    :param type_e: The type of the element (DECENTRALIZED or NEGOTIATED).
+    :param y_e: The decision variable values for the element.
+    :param y_star_e: The private decision variable values for NEGOTIATED elements, if applicable.
+    :return: The calculated quality functional value as a float.
+    """
+
+    return sum(c * y for c, y in zip(coeffs_functional, y_star_e if type_e == ElementType.NEGOTIATED else y_e))
 
 
 if __name__ == "__main__":

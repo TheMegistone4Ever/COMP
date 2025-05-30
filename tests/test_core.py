@@ -96,7 +96,7 @@ class TestHelpers(TestCase):
     def test_lp_sum_empty(self) -> None:
         """Test lp_sum with an empty list."""
 
-        self.assertEqual(lp_sum([]), 0)
+        self.assertEqual(lp_sum(list()), 0)
 
     def test_get_lp_problem_sizes(self) -> None:
         """Test get_lp_problem_sizes extracts sizes correctly."""
@@ -104,12 +104,12 @@ class TestHelpers(TestCase):
         elem1_cfg = ElementConfig(id=1, type=ElementType.DECENTRALIZED, num_constraints=2, num_decision_variables=3)
         elem2_cfg = ElementConfig(id=2, type=ElementType.NEGOTIATED, num_constraints=4, num_decision_variables=5)
 
-        elem1_data = ElementData(config=elem1_cfg, coeffs_functional=array([]),
-                                 resource_constraints=(array([]), array([]), array([])),
-                                 aggregated_plan_costs=array([]), delta=None, w=None)
-        elem2_data = ElementData(config=elem2_cfg, coeffs_functional=array([]),
-                                 resource_constraints=(array([]), array([]), array([])),
-                                 aggregated_plan_costs=array([]), delta=None, w=None)
+        elem1_data = ElementData(config=elem1_cfg, coeffs_functional=array(list()),
+                                 resource_constraints=(array(list()), array(list()), array(list())),
+                                 aggregated_plan_costs=array(list()), delta=None, w=None)
+        elem2_data = ElementData(config=elem2_cfg, coeffs_functional=array(list()),
+                                 resource_constraints=(array(list()), array(list()), array(list())),
+                                 aggregated_plan_costs=array(list()), delta=None, w=None)
         sizes = get_lp_problem_sizes([elem1_data, elem2_data])
         self.assertEqual(sizes, [(2, 3), (4, 5)])
 
@@ -213,10 +213,10 @@ class TestSolversFactories(TestCase):
         cfg_dec = ElementConfig(id=1, type=ElementType.DECENTRALIZED, num_constraints=1, num_decision_variables=1)
         cfg_neg = ElementConfig(id=2, type=ElementType.NEGOTIATED, num_constraints=1, num_decision_variables=1)
 
-        data_dec = ElementData(config=cfg_dec, coeffs_functional=array([]),
+        data_dec = ElementData(config=cfg_dec, coeffs_functional=array(list()),
                                resource_constraints=(array([1]), array([1]), array([1])),
                                aggregated_plan_costs=array([[1]]))
-        data_neg = ElementData(config=cfg_neg, coeffs_functional=array([]),
+        data_neg = ElementData(config=cfg_neg, coeffs_functional=array(list()),
                                resource_constraints=(array([1]), array([1]), array([1])),
                                aggregated_plan_costs=array([[1]]), delta=1, w=array([1]))
 

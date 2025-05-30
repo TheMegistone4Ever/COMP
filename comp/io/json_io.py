@@ -72,7 +72,7 @@ def load_center_data_from_json(filepath: str) -> CenterData:
         config=_parse_dataclass(CenterConfig, raw_data["config"]),
         coeffs_functional=[array(cf, dtype=float) for cf in raw_data["coeffs_functional"]],
         elements=[_parse_element_data(el) for el in raw_data["elements"]],
-        global_resource_constraints=array(raw_data.get("global_resource_constraints", []), dtype=float)
+        global_resource_constraints=array(raw_data.get("global_resource_constraints", list()), dtype=float)
         if raw_data.get("global_resource_constraints") else None,
-        f=array(raw_data.get("f", []), dtype=float) if raw_data.get("f") else None,
+        f=array(raw_data.get("f", list()), dtype=float) if raw_data.get("f") else None,
     )

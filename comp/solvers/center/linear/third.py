@@ -6,22 +6,7 @@ from comp.models import CenterData, ElementData, ElementSolution, ElementType
 from comp.solvers.core import CenterSolver
 from comp.solvers.core.element import ElementSolver
 from comp.solvers.factories import new_element_solver, execute_new_solver_from_data
-from comp.utils import stringify, tab_out
-
-
-def _calculate_element_own_quality(element_data: ElementData, solution_data: ElementSolution) -> float:
-    """
-    Calculate the element’s own quality functional value based on its type and solution.
-    For NEGOTIATED elements, the quality is c_e^T * y_star_e.
-    For DECENTRALIZED elements, the quality is c_e^T * y_e.
-
-    :param element_data: The ElementData instance contains configuration and coefficients.
-    :param solution_data: The ElementSolution instance containing the solved plan.
-    :return: The calculated quality functional value as a float.
-    """
-
-    return sum(c * y for c, y in zip(element_data.coeffs_functional, solution_data.plan.get("y_star_e")
-    if element_data.config.type == ElementType.NEGOTIATED else solution_data.plan.get("y_e")))
+from comp.utils import stringify, tab_out, calculate_element_own_quality
 
 
 class CenterLinearThird(CenterSolver):
@@ -152,7 +137,7 @@ class CenterLinearThird(CenterSolver):
            A. Iterates through its solutions obtained for different `w` values.
            B. Select the `w` and corresponding solution that maximizes the element’s
               own quality functional (c_e^T * y_plan_component), calculated by
-              `_calculate_element_own_quality`.
+              `calculate_element_own_quality`.
            C. Stores best selected `w` and solution in `self.chosen_element_solutions_info`.
            D. Appends the chosen `ElementSolution` to `self.element_solutions` (used by base class).
         5. It marks the setup as done.
@@ -194,7 +179,12 @@ class CenterLinearThird(CenterSolver):
                 if sol_info_tuple is None or not sol_info_tuple.plan:
                     continue
 
-                element_qf_e = _calculate_element_own_quality(self.data.elements[e], sol_info_tuple)
+                element_qf_e = calculate_element_own_quality(
+                    self.data.elements[e].coeffs_functional,
+                    self.data.elements[e].config.type,
+                    sol_info_tuple.plan.get("y_e", list()),
+                    sol_info_tuple.plan.get("y_star_e", list())
+                )
 
                 if (element_qf_e - max_element_qf_e) > tolerance:
                     max_element_qf_e = element_qf_e
@@ -251,7 +241,10 @@ class CenterLinearThird(CenterSolver):
                 elem_func_str, center_contr_str = "N/A", "N/A"
                 obj_str = stringify(combined_obj) if (combined_obj := sol_info.objective) != float("-inf") else "N/A"
                 if sol_info.plan.get("y_e"):
-                    elem_func = _calculate_element_own_quality(element_data, sol_info)
+                    elem_func = calculate_element_own_quality(
+                        element_data.coeffs_functional, element_data.config.type,
+                        sol_info.plan.get("y_e", list()), sol_info.plan.get("y_star_e", list())
+                    )
                     elem_func_str, center_contr_str, obj_str = map(
                         stringify, (elem_func, combined_obj - w_val * elem_func, combined_obj))
                 results_table_data.append([stringify(w_val), elem_func_str, center_contr_str, obj_str,
@@ -265,7 +258,10 @@ class CenterLinearThird(CenterSolver):
                 print(f"Chosen w: {stringify(chosen_w)}")
                 print(f"Chosen Plan: {stringify(chosen_solution_info.plan)}")
                 if chosen_solution_info.objective != float("-inf"):
-                    chosen_elem_func = _calculate_element_own_quality(element_data, chosen_solution_info)
+                    chosen_elem_func = calculate_element_own_quality(
+                        element_data.coeffs_functional, element_data.config.type,
+                        chosen_solution_info.plan.get("y_e", list()), chosen_solution_info.plan.get("y_star_e", list())
+                    )
                     chosen_center_contrib = chosen_solution_info.objective - chosen_w * chosen_elem_func
                     print(f"Chosen Element Functional (c^T y_plan): {stringify(chosen_elem_func)}")
                     print(f"Chosen Center Contribution (d^T y_e): {stringify(chosen_center_contrib)}")
@@ -320,7 +316,10 @@ class CenterLinearThird(CenterSolver):
                 for w, sol_info in self.all_element_solutions[e].items():
                     elem_qf, obj_s = float("-inf"), sol_info.objective if sol_info else float("-inf")
                     if sol_info.plan.get("y_e"):
-                        elem_qf = _calculate_element_own_quality(element_data, sol_info)
+                        elem_qf = calculate_element_own_quality(
+                            element_data.coeffs_functional, element_data.config.type,
+                            sol_info.plan.get("y_e", list()), sol_info.plan.get("y_star_e", list())
+                        )
                     all_w_solutions_payload[w] = {
                         "element_qf": elem_qf,
                         "center_qf": obj_s - w * elem_qf,
@@ -331,7 +330,10 @@ class CenterLinearThird(CenterSolver):
 
             chosen_w_payload = None
             if chosen_solution_info and chosen_solution_info.plan:
-                chosen_element_qf = _calculate_element_own_quality(element_data, chosen_solution_info)
+                chosen_element_qf = calculate_element_own_quality(
+                    element_data.coeffs_functional, element_data.config.type,
+                    chosen_solution_info.plan.get("y_e", list()), chosen_solution_info.plan.get("y_star_e", list())
+                )
                 chosen_center_qf = float("-inf")
                 if chosen_solution_info.plan.get("y_e"):
                     chosen_center_qf = chosen_solution_info.objective - chosen_w * chosen_element_qf

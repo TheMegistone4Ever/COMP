@@ -187,7 +187,7 @@ class ConfigRunTab(QWidget):
             self.data_display_textedit.clear()
             return
 
-        selected_elements_data = []
+        selected_elements_data = list()
         any_selected = False
         all_selected_or_none_in_list = True
 
