@@ -12,6 +12,8 @@ of [Prof. O. A. Pavlov](https://orcid.org/0000-0002-6524-6410)
 and [Bachelor M. Ye. Kyselov](https://orcid.org/0009-0005-3686-3419).
 It also includes a graphical user interface (GUI) for easier interaction, data management, and visualization of results.
 
+The package is available on PyPI: [`lp-comp`](https://pypi.org/project/lp-comp/).
+
 ## Table of Contents
 
 1. [Getting Started](#1-getting-started)
@@ -31,9 +33,11 @@ It also includes a graphical user interface (GUI) for easier interaction, data m
     1. [System Requirements](#31-system-requirements)
     2. [Software Requirements](#32-software-requirements)
 4. [Installation & Setup](#4-installation--setup)
-    1. [Clone Repository](#41-clone-repository)
-    2. [Setup Virtual Environment (Recommended)](#42-setup-virtual-environment-recommended)
-    3. [Install Dependencies](#43-install-dependencies)
+    1. [Installing from PyPI (Recommended for Users)](#41-installing-from-pypi-recommended-for-users)
+    2. [Setup for Development or Running from Source](#42-setup-for-development-or-running-from-source)
+        1. [Clone Repository](#421-clone-repository)
+        2. [Setup Virtual Environment (Recommended)](#422-setup-virtual-environment-recommended)
+        3. [Install Dependencies](#423-install-dependencies)
 5. [Running the Application](#5-running-the-application)
     1. [Command-Line Interface (CLI)](#51-command-line-interface-cli)
     2. [Graphical User Interface (GUI)](#52-graphical-user-interface-gui)
@@ -44,7 +48,15 @@ It also includes a graphical user interface (GUI) for easier interaction, data m
     3. [Tests (`tests/`)](#73-tests-tests)
 8. [Visualization of Empirical Analysis](#8-visualization-of-empirical-analysis)
 9. [Testing](#9-testing)
-10. [License](#10-license)
+10. [Publishing to PyPI (For Maintainers)](#10-publishing-to-pypi-for-maintainers)
+    1. [Clean Previous Builds](#101-clean-previous-builds)
+    2. [Build the Package](#102-build-the-package)
+    3. [Test with TestPyPI (Recommended)](#103-test-with-testpypi-recommended)
+        1. [Upload to TestPyPI](#1031-upload-to-testpypi)
+        2. [Install from TestPyPI and Verify](#1032-install-from-testpypi-and-verify)
+    4. [Publish to PyPI (Main Release)](#104-publish-to-pypi-main-release)
+    5. [Verify Installation from PyPI](#105-verify-installation-from-pypi)
+11. [License](#11-license)
 
 ## 1. Getting Started
 
@@ -408,9 +420,9 @@ available processor cores.
 
 ### 3.2 Software Requirements
 
-* **Python:** Version 3.12 or newer (developed with 3.12, technical specification mentions >=3.12, 3.13).
+* **Python:** Version 3.12 or newer (developed with 3.12).
 * **Pip:** For installing Python packages.
-* Dependencies as listed in `requirements.txt`:
+* Dependencies as listed in `requirements.txt` (or installed automatically via pip from PyPI):
     * `numpy~=2.2.5`
     * `PyQt5~=5.15.11`
     * `tabulate~=0.9.0`
@@ -418,14 +430,49 @@ available processor cores.
 
 ## 4. Installation & Setup
 
-### 4.1 Clone Repository
+### 4.1. Installing from PyPI (Recommended for Users)
+
+The `lp-comp` package is available on PyPI and TestPyPI. Users can install it using pip:
+
+**From PyPI (stable releases):**
+
+```bash
+pip install lp-comp
+```
+
+This will install the latest stable version of the library and its dependencies.
+
+* Project on PyPI: [https://pypi.org/project/lp-comp/](https://pypi.org/project/lp-comp/)
+
+  <img src="images/pypi_uploaded.png" alt="lp-comp on PyPI" width="600"/>
+
+**From TestPyPI (for testing pre-releases):**
+
+```bash
+pip install -i https://test.pypi.org/simple/ lp-comp
+```
+
+* Project on TestPyPI: [https://test.pypi.org/project/lp-comp/](https://test.pypi.org/project/lp-comp/)
+
+  <img src="images/pypi_test_uploaded.png" alt="lp-comp on TestPyPI" width="600"/>
+
+After installation, User can verify it by checking User’s installed packages (e.g., `pip list` or in User’s IDE).
+
+  <img src="images/pypi_packages_installed.png" alt="lp-comp installed in PyCharm" width="600"/>
+
+### 4.2. Setup for Development or Running from Source
+
+If a User wants to contribute to the project, run examples directly from the source code, or modify the library, follow
+these steps:
+
+#### 4.2.1. Clone Repository
 
 ```bash
 git clone https://github.com/TheMegistone4Ever/COMP.git
 cd COMP
 ```
 
-### 4.2 Setup Virtual Environment (Recommended)
+#### 4.2.2. Setup Virtual Environment (Recommended)
 
 It is highly recommended to use a virtual environment to manage project dependencies.
 
@@ -440,12 +487,18 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-### 4.3 Install Dependencies
+#### 4.2.3. Install Dependencies
 
 Install the required Python packages using pip:
 
 ```bash
 pip install -r requirements.txt
+```
+
+For development, including building and publishing the package, User might also want to install:
+
+```bash
+pip install build twine
 ```
 
 ## 5. Running the Application
@@ -464,22 +517,37 @@ The `examples/` directory contains scripts to demonstrate core functionalities.
     4. Instantiate and run the `CenterSolver`.
     5. Print results to the console and save detailed results to `examples/center_results_output.json`.
 
-  To run this example:
+  To run this example (from the cloned repository, within the activated virtual environment):
   ```bash
   python examples/main.py
   ```
   *Console Output Example (partial):*
 
   <img src="images/ui_tab_results.png" alt="Console output from main.py showing partial results table" width="600"/>
+  *(Note: This image shows GUI results tab, but the console output format is similar in structure.)*
+
+  If User have installed `lp-comp` via pip into an environment, User can test its core functionality by adapting
+  `examples/main.py` to run in that environment.
+  The images in the [Publishing to PyPI](#10-publishing-to-pypi-for-maintainers) section show this kind of verification.
 
 ### 5.2 Graphical User Interface (GUI)
 
 The GUI provides an interactive way to work with the COMP library.
 
 * **Launching the GUI:**
-  ```bash
-  python examples/run_gui.py
-  ```
+    * **From source code (e.g., within the cloned repository and activated virtual environment):**
+      ```bash
+      python examples/run_gui.py
+      ```
+    * **After installing the package via pip:**
+      If an entry point script (`comp-gui`) was configured during installation
+      ```bash
+      comp-gui 
+      ```
+      Alternatively, User can usually run the GUI module directly:
+      ```bash
+      python -m comp.gui_launcher
+      ```
 
 * **Data Loading Tab:**
   Allows users to load system data from a `.json` file.
@@ -532,77 +600,86 @@ The GUI provides an interactive way to work with the COMP library.
 
 ```
 COMP/
+├── .gitattributes
+├── .gitignore
 ├── LICENSE.md
+├── MANIFEST.in
 ├── README.md
+├── pyproject.toml
 ├── requirements.txt
+├── setup.cfg
+├── setup.py
+├── version.txt
 ├── comp/
 │   ├── __init__.py
+│   ├── _version.py
+│   ├── gui_launcher.py
 │   ├── io/
-│   │   ├── json_io.py
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── json_io.py
 │   ├── media/
-│   │   ├── COMP.ico
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── COMP.ico
 │   ├── models/
+│   │   ├── __init__.py
 │   │   ├── base.py
 │   │   ├── center.py
-│   │   ├── element.py
-│   │   └── __init__.py
+│   │   └── element.py
 │   ├── parallelization/
+│   │   ├── __init__.py
 │   │   ├── heuristic.py
 │   │   ├── parallel_executor.py
-│   │   ├── __init__.py
 │   │   └── core/
+│   │       ├── __init__.py
 │   │       ├── device.py
 │   │       ├── empiric.py
-│   │       ├── operation.py
-│   │       └── __init__.py
+│   │       └── operation.py
 │   ├── solvers/
-│   │   ├── factories.py
 │   │   ├── __init__.py
+│   │   ├── factories.py
 │   │   ├── center/
 │   │   │   ├── __init__.py
 │   │   │   ├── linear/
+│   │   │   │   ├── __init__.py
 │   │   │   │   ├── first.py
 │   │   │   │   ├── second.py
-│   │   │   │   ├── third.py
-│   │   │   │   └── __init__.py
+│   │   │   │   └── third.py
 │   │   │   └── linked/
-│   │   │       ├── first.py
-│   │   │       └── __init__.py
+│   │   │       ├── __init__.py
+│   │   │       └── first.py
 │   │   ├── core/
+│   │   │   ├── __init__.py
 │   │   │   ├── base.py
 │   │   │   ├── center.py
-│   │   │   ├── element.py
-│   │   │   └── __init__.py
+│   │   │   └── element.py
 │   │   └── element/
 │   │       ├── __init__.py
 │   │       └── linear/
+│   │           ├── __init__.py
 │   │           ├── first.py
-│   │           ├── second.py
-│   │           └── __init__.py
+│   │           └── second.py
 │   ├── ui/
+│   │   ├── __init__.py
 │   │   ├── config_run_tab.py
 │   │   ├── data_load_tab.py
 │   │   ├── main_window.py
 │   │   ├── results_tab.py
 │   │   ├── styles.py
-│   │   ├── worker.py
-│   │   └── __init__.py
+│   │   └── worker.py
 │   └── utils/
+│       ├── __init__.py
 │       ├── assertions.py
 │       ├── helpers.py
-│       ├── json_base_serializer.py
-│       └── __init__.py
+│       └── json_base_serializer.py
 ├── examples/
+│   ├── __init__.py
 │   ├── center_data_generated.json
 │   ├── center_results_output.json
 │   ├── main.py
 │   ├── run_gui.py
-│   ├── __init__.py
 │   └── data/
-│       ├── generator.py
-│       └── __init__.py
+│       ├── __init__.py
+│       └── generator.py
 ├── images/
 │   ├── General_Mixed_W1_linear_2d.png
 │   ├── General_Mixed_W1_linear_3d.png
@@ -612,6 +689,18 @@ COMP/
 │   ├── General_Mixed_W2_linear_3d.png
 │   ├── General_Mixed_W2_log_2d.png
 │   ├── General_Mixed_W2_log_3d.png
+│   ├── pypi_build_success.png
+│   ├── pypi_building.png
+│   ├── pypi_clearing.png
+│   ├── pypi_env_check.png
+│   ├── pypi_packages_installed.png
+│   ├── pypi_sol_check.png
+│   ├── pypi_test_env_check.png
+│   ├── pypi_test_sol_check.png
+│   ├── pypi_test_upload.png
+│   ├── pypi_test_uploaded.png
+│   ├── pypi_upload.png
+│   ├── pypi_uploaded.png
 │   ├── ui_copied_to_buffer.png
 │   ├── ui_copied_to_buffer_msg.png
 │   ├── ui_data_loaded.png
@@ -624,14 +713,18 @@ COMP/
 │   ├── ui_tab_setup.png
 │   └── unit_tests_results.png
 └── tests/
-    ├── test_core.py
-    └── __init__.py
+    ├── __init__.py
+    └── test_core.py
 ```
 
 ## 7. Code Overview
 
 ### 7.1 Core Library (`comp/`)
 
+* **`comp/_version.py`**: Defines the package version (`__version__`).
+* **`comp/__init__.py`**: Makes `__version__` available at the package level (`from comp import __version__`).
+* **`comp/gui_launcher.py`**: Contains the `main_app_entry` function for launching the PyQt5 GUI.
+  This is the target for `python -m comp.gui_launcher`.
 * **`comp.models`**: Contains dataclasses defining the structure of the system:
     * `BaseConfig`, `BaseData`: Base classes for configuration and data.
     * `CenterConfig`, `CenterData`, `CenterType`: Define the Center's properties, data, and coordination strategies.
@@ -681,7 +774,8 @@ COMP/
 
 * `main.py`: Demonstrates CLI usage: data generation, loading, solver instantiation, running coordination, and saving
   results.
-* `run_gui.py`: Entry point to launch the PyQt5 GUI application.
+* `run_gui.py`: Entry point to launch the PyQt5 GUI application when running from source.
+  It typically imports and calls `main_app_entry` from `comp.gui_launcher`.
 * `data/generator.py` (`DataGenerator`): Class for generating random `CenterData` for testing and examples.
 * `center_data_generated.json`: Example data file that can be generated by `main.py`.
 * `center_results_output.json`: Example results file that can be generated by `main.py`.
@@ -734,7 +828,7 @@ parallelization heuristically used in COMP.
 Unit tests are implemented using Python's `unittest` framework and can be found in the `tests/` directory.
 They cover core utilities, data models, data generation, parallelization logic, and solver factories.
 
-To run tests:
+To run tests (from the root of the cloned repository, with the virtual environment activated):
 
 ```bash
 python -m unittest tests.test_core
@@ -744,6 +838,96 @@ python -m unittest tests.test_core
 
 <img src="images/unit_tests_results.png" alt="Unit Test Results" width="600"/>
 
-## 10. License
+## 10. Publishing to PyPI (For Maintainers)
+
+This section outlines the steps to build and publish the `lp-comp` package to PyPI and TestPyPI.
+Ensure User have `build` and `twine` installed (`pip install build twine`).
+
+### 10.1. Clean Previous Builds
+
+Before creating new distribution files, it is good practice to remove any old ones from the `dist/`, `build/`, and
+`*.egg-info` directories.
+
+*(Example PowerShell commands as shown in User’s screenshot, adapt as needed for User’s OS/shell)*
+
+```powershell
+if (Test-Path -Path "build") { Remove-Item -Recurse -Force "build" }
+if (Test-Path -Path "dist") { Remove-Item -Recurse -Force "dist" }
+if (Test-Path -Path "lp_comp.egg-info") { Remove-Item -Recurse -Force "lp_comp.egg-info" } # Adjust egg-info name if needed
+```
+
+<img src="images/pypi_clearing.png" alt="Clearing build artifacts" width="600"/>
+
+### 10.2. Build the Package
+
+Use the `build` package to create the source distribution (`.tar.gz`) and wheel (`.whl`).
+This process typically uses `pyproject.toml` for build configuration.
+
+```bash
+python -m build
+```
+
+<img src="images/pypi_building.png" alt="Building the package" width="600"/>
+
+This will create the distribution files in the `dist/` directory.
+<img src="images/pypi_build_success.png" alt="Successful package build" width="600"/>
+
+### 10.3. Test with TestPyPI (Recommended)
+
+#### 10.3.1. Upload to TestPyPI
+
+Upload the distributions to TestPyPI to ensure everything works correctly before publishing to the main PyPI.
+
+```bash
+twine upload --repository testpypi dist/*
+```
+
+User will be prompted for User’s TestPyPI username and password (or API token).
+<img src="images/pypi_test_upload.png" alt="Uploading to TestPyPI" width="600"/>
+
+#### 10.3.2. Install from TestPyPI and Verify
+
+Create a fresh virtual environment, install the package from TestPyPI, and run some checks.
+
+```bash
+# In a new, clean virtual environment
+pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple lp-comp
+pip list # Check if lp-comp and dependencies are installed
+```
+
+<img src="images/pypi_test_env_check.png" alt="Installing and checking from TestPyPI" width="600"/>
+
+Run an example script (e.g., `examples/main.py`, ensuring it uses the installed package) to verify functionality.
+User might need to adapt paths or copy necessary example files (`examples/main.py`,
+`examples/center_data_generated.json`) to User’s test location if running outside the source tree.
+<img src="images/pypi_test_sol_check.png" alt="Running example with TestPyPI version" width="600"/>
+
+### 10.4. Publish to PyPI (Main Release)
+
+Once a User is confident that the package is working correctly, upload it to the official Python Package Index (PyPI).
+
+```bash
+twine upload dist/*
+```
+
+User will be prompted for User’s PyPI username and password (or API token).
+<img src="images/pypi_upload.png" alt="Uploading to PyPI" width="600"/>
+
+### 10.5. Verify Installation from PyPI
+
+As a final check, install the package from the main PyPI in a clean environment and verify.
+
+```bash
+# In a new, clean virtual environment
+pip install lp-comp
+pip list # Check if lp-comp and dependencies are installed
+```
+
+<img src="images/pypi_env_check.png" alt="Installing and checking from PyPI" width="600"/>
+
+User can also run an example to confirm, similar to the TestPyPI verification.
+<img src="images/pypi_sol_check.png" alt="Running example with PyPI version" width="600"/>
+
+## 11. License
 
 The project is licensed under the [CC BY-NC 4.0 License](LICENSE.md).
