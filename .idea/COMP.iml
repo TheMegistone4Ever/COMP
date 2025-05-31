@@ -5,6 +5,8 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/build_ui" />
       <excludeFolder url="file://$MODULE_DIR$/dist_ui" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/lp_comp.egg-info" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.12 (COMP) (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
