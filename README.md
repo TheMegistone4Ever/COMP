@@ -444,7 +444,7 @@ This will install the latest stable version of the library and its dependencies.
 
 * Project on PyPI: [https://pypi.org/project/lp-comp/](https://pypi.org/project/lp-comp/)
 
-  <img src="images/pypi_uploaded.png" alt="lp-comp on PyPI" width="600"/>
+  <img src="images/pypi_uploaded.png" alt="lp-comp on PyPI" width="800"/>
 
 **From TestPyPI (for testing pre-releases):**
 
@@ -454,11 +454,11 @@ pip install -i https://test.pypi.org/simple/ lp-comp
 
 * Project on TestPyPI: [https://test.pypi.org/project/lp-comp/](https://test.pypi.org/project/lp-comp/)
 
-  <img src="images/pypi_test_uploaded.png" alt="lp-comp on TestPyPI" width="600"/>
+  <img src="images/pypi_test_uploaded.png" alt="lp-comp on TestPyPI" width="800"/>
 
 After installation, User can verify it by checking User’s installed packages (e.g., `pip list` or in User’s IDE).
 
-  <img src="images/pypi_packages_installed.png" alt="lp-comp installed in PyCharm" width="600"/>
+  <img src="images/pypi_packages_installed.png" alt="lp-comp installed in PyCharm" width="800"/>
 
 ### 4.2. Setup for Development or Running from Source
 
@@ -523,7 +523,7 @@ The `examples/` directory contains scripts to demonstrate core functionalities.
   ```
   *Console Output Example (partial):*
 
-  <img src="images/ui_tab_results.png" alt="Console output from main.py showing partial results table" width="600"/>
+  <img src="images/ui_tab_results.png" alt="Console output from main.py showing partial results table" width="800"/>
   *(Note: This image shows GUI results tab, but the console output format is similar in structure.)*
 
   If User have installed `lp-comp` via pip into an environment, User can test its core functionality by adapting
@@ -553,15 +553,15 @@ The GUI provides an interactive way to work with the COMP library.
   Allows users to load system data from a `.json` file.
   *Initial View:*
 
-  <img src="images/ui_tab_load_data.png" alt="GUI - Data Loading Tab (Initial)" width="600"/>
+  <img src="images/ui_tab_load_data.png" alt="GUI - Data Loading Tab (Initial)" width="800"/>
 
   *File Dialog for Loading Data:*
 
-  <img src="images/ui_dialog_load_data.png" alt="GUI - File Dialog for Loading Data" width="600"/>
+  <img src="images/ui_dialog_load_data.png" alt="GUI - File Dialog for Loading Data" width="800"/>
 
   *Data Loaded Confirmation:*
 
-  <img src="images/ui_data_loaded.png" alt="GUI - Data Loaded Confirmation" width="600"/>
+  <img src="images/ui_data_loaded.png" alt="GUI - Data Loaded Confirmation" width="800"/>
 
 * **Configuration & Run Tab:**
   After loading data, this tab allows users to:
@@ -570,7 +570,7 @@ The GUI provides an interactive way to work with the COMP library.
     * View data for selected elements or the entire center.
     * Run the coordinated planning calculation.
 
-  <img src="images/ui_tab_setup.png" alt="GUI - Configuration & Run Tab" width="600"/>
+  <img src="images/ui_tab_setup.png" alt="GUI - Configuration & Run Tab" width="800"/>
 
 * **Result Tab:**
   Displays the results of the calculation.
@@ -580,21 +580,21 @@ The GUI provides an interactive way to work with the COMP library.
 
   *Results Display:*
 
-  <img src="images/ui_tab_results.png" alt="GUI - Results Tab" width="600"/>
+  <img src="images/ui_tab_results.png" alt="GUI - Results Tab" width="800"/>
 
   *Copy to Clipboard Action:*
 
-  <img src="images/ui_copied_to_buffer_msg.png" alt="GUI - Copied to Clipboard Message" width="600"/>
+  <img src="images/ui_copied_to_buffer_msg.png" alt="GUI - Copied to Clipboard Message" width="800"/>
 
-  <img src="images/ui_copied_to_buffer.png" alt="GUI - Copy to Clipboard button" width="600"/>
+  <img src="images/ui_copied_to_buffer.png" alt="GUI - Copy to Clipboard button" width="800"/>
 
   *Save Results Action:*
 
-  <img src="images/ui_dialog_save_results.png" alt="GUI - File Dialog for Saving Results" width="600"/>
+  <img src="images/ui_dialog_save_results.png" alt="GUI - File Dialog for Saving Results" width="800"/>
 
-  <img src="images/ui_results_saved_msg.png" alt="GUI - Results Saved Message" width="600"/>
+  <img src="images/ui_results_saved_msg.png" alt="GUI - Results Saved Message" width="800"/>
 
-  <img src="images/ui_results_saved.png" alt="GUI - Results Saved Confirmation in status bar" width="600"/>
+  <img src="images/ui_results_saved.png" alt="GUI - Results Saved Confirmation in status bar" width="800"/>
 
 ## 6. Project Structure
 
@@ -793,35 +793,35 @@ parallelization heuristically used in COMP.
 
 *3D Plot - General Mixed Model (Linear Scale) - W1:*
 
-<img src="images/General_Mixed_W1_linear_3d.png" alt="3D Plot - General Mixed (Linear Scale) - W1" width="600"/>
+<img src="images/General_Mixed_W1_linear_3d.png" alt="3D Plot - General Mixed (Linear Scale) - W1" width="800"/>
 
 *3D Plot - General Mixed Model (Logarithmic Scale) - W1:*
 
-<img src="images/General_Mixed_W1_log_3d.png" alt="3D Plot - General Mixed (Log Scale) - W1" width="600"/>
+<img src="images/General_Mixed_W1_log_3d.png" alt="3D Plot - General Mixed (Log Scale) - W1" width="800"/>
 
 *3D Plot - General Mixed Model (Linear Scale) - W2:*
 
-<img src="images/General_Mixed_W2_linear_3d.png" alt="3D Plot - General Mixed (Linear Scale) - W2" width="600"/>
+<img src="images/General_Mixed_W2_linear_3d.png" alt="3D Plot - General Mixed (Linear Scale) - W2" width="800"/>
 
 *3D Plot - General Mixed Model (Logarithmic Scale) - W2:*
 
-<img src="images/General_Mixed_W2_log_3d.png" alt="3D Plot - General Mixed (Log Scale) - W2" width="600"/>
+<img src="images/General_Mixed_W2_log_3d.png" alt="3D Plot - General Mixed (Log Scale) - W2" width="800"/>
 
 *2D Plots - Operations vs. m (Linear Scale) - W1:*
 
-<img src="images/General_Mixed_W1_linear_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Linear Scale) - W1" width="600"/>
+<img src="images/General_Mixed_W1_linear_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Linear Scale) - W1" width="800"/>
 
 *2D Plots - Operations vs. m (Logarithmic Scale) - W1:*
 
-<img src="images/General_Mixed_W1_log_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Log Scale) - W1" width="600"/>
+<img src="images/General_Mixed_W1_log_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Log Scale) - W1" width="800"/>
 
 *2D Plots - Operations vs. m (Linear Scale) - W2:*
 
-<img src="images/General_Mixed_W2_linear_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Linear Scale) - W2" width="600"/>
+<img src="images/General_Mixed_W2_linear_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Linear Scale) - W2" width="800"/>
 
 *2D Plots - Operations vs. m (Logarithmic Scale) - W2:*
 
-<img src="images/General_Mixed_W2_log_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Log Scale) - W2" width="600"/>
+<img src="images/General_Mixed_W2_log_2d.png" alt="2D Plots - General Mixed - Operations vs. m (Log Scale) - W2" width="800"/>
 
 ## 9. Testing
 
@@ -836,7 +836,7 @@ python -m unittest tests.test_core
 
 *Example Test Output:*
 
-<img src="images/unit_tests_results.png" alt="Unit Test Results" width="600"/>
+<img src="images/unit_tests_results.png" alt="Unit Test Results" width="800"/>
 
 ## 10. Publishing to PyPI (For Maintainers)
 
@@ -856,7 +856,7 @@ if (Test-Path -Path "dist") { Remove-Item -Recurse -Force "dist" }
 if (Test-Path -Path "lp_comp.egg-info") { Remove-Item -Recurse -Force "lp_comp.egg-info" } # Adjust egg-info name if needed
 ```
 
-<img src="images/pypi_clearing.png" alt="Clearing build artifacts" width="600"/>
+<img src="images/pypi_clearing.png" alt="Clearing build artifacts" width="800"/>
 
 ### 10.2. Build the Package
 
@@ -867,10 +867,10 @@ This process typically uses `pyproject.toml` for build configuration.
 python -m build
 ```
 
-<img src="images/pypi_building.png" alt="Building the package" width="600"/>
+<img src="images/pypi_building.png" alt="Building the package" width="800"/>
 
 This will create the distribution files in the `dist/` directory.
-<img src="images/pypi_build_success.png" alt="Successful package build" width="600"/>
+<img src="images/pypi_build_success.png" alt="Successful package build" width="800"/>
 
 ### 10.3. Test with TestPyPI (Recommended)
 
@@ -883,7 +883,7 @@ twine upload --repository testpypi dist/*
 ```
 
 User will be prompted for User’s TestPyPI username and password (or API token).
-<img src="images/pypi_test_upload.png" alt="Uploading to TestPyPI" width="600"/>
+<img src="images/pypi_test_upload.png" alt="Uploading to TestPyPI" width="800"/>
 
 #### 10.3.2. Install from TestPyPI and Verify
 
@@ -895,12 +895,12 @@ pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/
 pip list # Check if lp-comp and dependencies are installed
 ```
 
-<img src="images/pypi_test_env_check.png" alt="Installing and checking from TestPyPI" width="600"/>
+<img src="images/pypi_test_env_check.png" alt="Installing and checking from TestPyPI" width="800"/>
 
 Run an example script (e.g., `examples/main.py`, ensuring it uses the installed package) to verify functionality.
 User might need to adapt paths or copy necessary example files (`examples/main.py`,
 `examples/center_data_generated.json`) to User’s test location if running outside the source tree.
-<img src="images/pypi_test_sol_check.png" alt="Running example with TestPyPI version" width="600"/>
+<img src="images/pypi_test_sol_check.png" alt="Running example with TestPyPI version" width="800"/>
 
 ### 10.4. Publish to PyPI (Main Release)
 
@@ -911,7 +911,7 @@ twine upload dist/*
 ```
 
 User will be prompted for User’s PyPI username and password (or API token).
-<img src="images/pypi_upload.png" alt="Uploading to PyPI" width="600"/>
+<img src="images/pypi_upload.png" alt="Uploading to PyPI" width="800"/>
 
 ### 10.5. Verify Installation from PyPI
 
@@ -923,10 +923,10 @@ pip install lp-comp
 pip list # Check if lp-comp and dependencies are installed
 ```
 
-<img src="images/pypi_env_check.png" alt="Installing and checking from PyPI" width="600"/>
+<img src="images/pypi_env_check.png" alt="Installing and checking from PyPI" width="800"/>
 
 User can also run an example to confirm, similar to the TestPyPI verification.
-<img src="images/pypi_sol_check.png" alt="Running example with PyPI version" width="600"/>
+<img src="images/pypi_sol_check.png" alt="Running example with PyPI version" width="800"/>
 
 ## 11. License
 
